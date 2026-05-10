@@ -7,7 +7,8 @@ import { QuoteCard } from '../components/QuoteCard';
 import { StreakCounter } from '../components/StreakCounter';
 import { HABITS, PERIOD_LABELS, PERIOD_ORDER } from '../lib/habits';
 import { quoteForDate } from '../lib/quotes';
-import { selectStreak, useAppStore } from '../store/useAppStore';
+import { computeStreak } from '../lib/streak';
+import { useAppStore } from '../store/useAppStore';
 import {
   activeHabitCount,
   completedCount,
@@ -19,9 +20,20 @@ import {
 export function Home() {
   const today = useAppStore((s) => s.today);
   const meta = useAppStore((s) => s.meta);
+  const history = useAppStore((s) => s.history);
   const toggleHabit = useAppStore((s) => s.toggleHabit);
   const toggleConditional = useAppStore((s) => s.toggleConditional);
-  const streak = useAppStore(selectStreak);
+
+  // Compute streak via useMemo to avoid Zustand v5 infinite-loop:
+  // selectors that return new objects on each call cause useSyncExternalStore
+  // to think state changed every render → React error #185.
+  const streak = useMemo(
+    () =>
+      meta
+        ? computeStreak(history, meta.freezeUsedDates)
+        : { current: 0, freezeUsedThisWeek: false, consumedFreezeDates: [] },
+    [history, meta],
+  );
 
   const [confettiKey, setConfettiKey] = useState(0);
   const [confettiOrigin, setConfettiOrigin] = useState<{ x: number; y: number } | undefined>();

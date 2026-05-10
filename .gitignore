@@ -50,3 +50,5 @@ preview.log
 
 # Netlify
 .netlify
+
+.vercel

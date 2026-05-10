@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import * as db from '../lib/db';
 import { DEFAULT_REMINDERS } from '../lib/notifications';
-import { computeLongestStreak, computeStreak } from '../lib/streak';
+import { computeLongestStreak } from '../lib/streak';
 import type { AppMeta, ConditionalKey, DayEntry } from '../lib/types';
 import { buildEmptyDay, calcCompletionRate, todayKey } from '../lib/utils';
 
@@ -150,9 +150,3 @@ export const useAppStore = create<AppState>((set, get) => ({
     await get().hydrate();
   },
 }));
-
-/** Selector — current streak, computed from history + freeze tracking. */
-export function selectStreak(state: AppState) {
-  if (!state.meta) return { current: 0, freezeUsedThisWeek: false, consumedFreezeDates: [] };
-  return computeStreak(state.history, state.meta.freezeUsedDates);
-}

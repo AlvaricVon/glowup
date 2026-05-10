@@ -14,17 +14,26 @@ import { Activity, Flame, Sparkles, TrendingDown, TrendingUp } from 'lucide-reac
 import { Heatmap } from '../components/Heatmap';
 import { EmptyState } from '../components/EmptyState';
 import { HABITS_BY_ID } from '../lib/habits';
+import { computeStreak } from '../lib/streak';
 import type { DayEntry } from '../lib/types';
 import { activeHabitsForDay, formatShort } from '../lib/utils';
-import { selectStreak, useAppStore } from '../store/useAppStore';
+import { useAppStore } from '../store/useAppStore';
 
 type Period = 7 | 30 | 90;
 
 export function Stats() {
   const history = useAppStore((s) => s.history);
   const meta = useAppStore((s) => s.meta);
-  const streak = useAppStore(selectStreak);
   const [period, setPeriod] = useState<Period>(30);
+
+  // Compute via useMemo (see comment in Home.tsx — Zustand v5 selector caveat).
+  const streak = useMemo(
+    () =>
+      meta
+        ? computeStreak(history, meta.freezeUsedDates)
+        : { current: 0, freezeUsedThisWeek: false, consumedFreezeDates: [] },
+    [history, meta],
+  );
 
   const completedDays = history.filter((d) => d.completionRate > 0);
 
