@@ -1,6 +1,6 @@
 export type Period = 'pagi' | 'siang' | 'sore' | 'malam' | 'limit' | 'conditional';
 
-export type ConditionalKey = 'kamarKotor' | 'bauBadan' | 'grooming';
+export type ConditionalKey = never;
 
 export interface HabitDef {
   id: string;

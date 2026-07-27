@@ -1,7 +1,7 @@
 import { format, parseISO, startOfWeek, addDays } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-import { HABITS, BASE_HABIT_COUNT } from './habits';
-import type { ConditionalKey, DayEntry, HabitDef } from './types';
+import { HABITS } from './habits';
+import type { DayEntry, HabitDef } from './types';
 
 export const STREAK_THRESHOLD = 0.8;
 
@@ -35,11 +35,7 @@ export function buildEmptyDay(date: string): DayEntry {
     date,
     habits,
     completionRate: 0,
-    conditionals: {
-      kamarKotor: false,
-      bauBadan: false,
-      grooming: false,
-    },
+    conditionals: {} as Record<never, boolean>,
   };
 }
 
@@ -52,11 +48,7 @@ export function activeHabitsForDay(day: DayEntry): HabitDef[] {
 }
 
 export function activeHabitCount(day: DayEntry): number {
-  let count = BASE_HABIT_COUNT;
-  for (const key of Object.keys(day.conditionals) as ConditionalKey[]) {
-    if (day.conditionals[key]) count += 1;
-  }
-  return count;
+  return activeHabitsForDay(day).length;
 }
 
 export function completedCount(day: DayEntry): number {

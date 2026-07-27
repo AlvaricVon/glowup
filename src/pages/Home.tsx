@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { ConditionalToggles } from '../components/ConditionalToggles';
 import { ConfettiBurst } from '../components/ConfettiBurst';
 import { HabitGroup } from '../components/HabitGroup';
 import { ProgressBar } from '../components/ProgressBar';
@@ -22,7 +21,6 @@ export function Home() {
   const meta = useAppStore((s) => s.meta);
   const history = useAppStore((s) => s.history);
   const toggleHabit = useAppStore((s) => s.toggleHabit);
-  const toggleConditional = useAppStore((s) => s.toggleConditional);
 
   // Compute streak via useMemo to avoid Zustand v5 infinite-loop:
   // selectors that return new objects on each call cause useSyncExternalStore
@@ -84,8 +82,6 @@ export function Home() {
       />
 
       <ProgressBar done={done} total={total} />
-
-      <ConditionalToggles day={today} onToggle={(k) => void toggleConditional(k)} />
 
       <div className="space-y-5">
         {groups.map((g) => (

@@ -5,10 +5,9 @@ export const DEFAULT_REMINDERS: ReminderConfig[] = [
   { id: 'jogging', label: 'Jogging pagi', time: '05:30', enabled: true },
   { id: 'dzuhur', label: 'Dzuhur — masjid time', time: '12:00', enabled: true },
   { id: 'ashar', label: 'Ashar — masjid time', time: '15:15', enabled: true },
-  { id: 'workout', label: 'Workout sore (Darebee)', time: '16:30', enabled: true },
   { id: 'maghrib', label: 'Maghrib — masjid time', time: '18:00', enabled: true },
   { id: 'isya', label: 'Isya — masjid time', time: '19:15', enabled: true },
-  { id: 'tidur', label: 'Tidur — sebelum jam 12', time: '23:00', enabled: true },
+  { id: 'tidur', label: 'Tidur — sebelum jam 10', time: '21:30', enabled: true },
 ];
 
 export async function ensurePermission(): Promise<NotificationPermission> {
