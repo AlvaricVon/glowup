@@ -8,6 +8,8 @@ export interface HabitDef {
   description?: string;
   period: Period;
   priority: number;
+  /** If set, habit only shows on these days of the week (0=Sun, 1=Mon, ..., 6=Sat). */
+  days?: number[];
   /** If set, habit only shows when the matching conditional toggle in the day entry is true. */
   conditional?: ConditionalKey;
 }

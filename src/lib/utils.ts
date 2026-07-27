@@ -39,9 +39,11 @@ export function buildEmptyDay(date: string): DayEntry {
   };
 }
 
-/** Active habits for the day = base habits + active conditionals. */
+/** Active habits for the day = base habits (filtered by day) + active conditionals. */
 export function activeHabitsForDay(day: DayEntry): HabitDef[] {
+  const currentDay = new Date(day.date).getDay();
   return HABITS.filter((h) => {
+    if (h.days && !h.days.includes(currentDay)) return false;
     if (!h.conditional) return true;
     return day.conditionals[h.conditional];
   });

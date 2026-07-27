@@ -38,9 +38,11 @@ export function Home() {
 
   const groups = useMemo(() => {
     if (!today) return [];
+    const currentDay = new Date(today.date).getDay();
     return PERIOD_ORDER.map((p) => {
       const all = HABITS.filter((h) => h.period === p);
       const visible = all.filter((h) => {
+        if (h.days && !h.days.includes(currentDay)) return false;
         if (!h.conditional) return true;
         return today.conditionals[h.conditional];
       });
