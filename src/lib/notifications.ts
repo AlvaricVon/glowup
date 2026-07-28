@@ -1,12 +1,12 @@
 import type { ReminderConfig } from './types';
 
 export const DEFAULT_REMINDERS: ReminderConfig[] = [
-  { id: 'subuh', label: 'Subuh — masjid time', time: '04:30', enabled: true },
+  { id: 'subuh', label: 'Subuh — sholat time', time: '04:30', enabled: true },
   { id: 'jogging', label: 'Jogging pagi', time: '05:30', enabled: true },
-  { id: 'dzuhur', label: 'Dzuhur — masjid time', time: '12:00', enabled: true },
-  { id: 'ashar', label: 'Ashar — masjid time', time: '15:15', enabled: true },
-  { id: 'maghrib', label: 'Maghrib — masjid time', time: '18:00', enabled: true },
-  { id: 'isya', label: 'Isya — masjid time', time: '19:15', enabled: true },
+  { id: 'dzuhur', label: 'Dzuhur — sholat time', time: '12:00', enabled: true },
+  { id: 'ashar', label: 'Ashar — sholat time', time: '15:15', enabled: true },
+  { id: 'maghrib', label: 'Maghrib — sholat time', time: '18:00', enabled: true },
+  { id: 'isya', label: 'Isya — sholat time', time: '19:15', enabled: true },
   { id: 'tidur', label: 'Tidur — sebelum jam 10', time: '21:30', enabled: true },
 ];
 
