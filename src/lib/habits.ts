@@ -9,9 +9,10 @@ export const HABITS: HabitDef[] = [
   { id: 'subuh-masjid', label: 'Sholat subuh', period: 'pagi', priority: 2 },
   { id: 'beresin-kamar', label: 'Beresin kamar', description: 'Wajib setiap bangun tidur', period: 'pagi', priority: 3 },
   { id: 'physical-pagi', label: 'Hang dead + Skipping + Peregangan', description: 'Hang 30s+ (Target 3m -> Pull up), Skipping 5m, Stretching', period: 'pagi', priority: 4 },
-  { id: 'pushups-pagi', label: 'Push-ups (10-20x)', description: 'Sebelum jogging', period: 'pagi', priority: 5, days: REST_DAYS },
-  { id: 'jogging-pagi', label: 'Jogging pagi', period: 'pagi', priority: 6, days: REST_DAYS },
-  { id: 'mandi-pagi', label: 'Mandi pagi', description: 'Setelah olahraga pagi', period: 'pagi', priority: 7 },
+  { id: 'pushups-pagi', label: 'Push-ups (10-20x)', description: 'Sebelum jalan pagi', period: 'pagi', priority: 5, days: REST_DAYS },
+  { id: 'jogging-pagi', label: 'Jalan pagi', period: 'pagi', priority: 6, days: REST_DAYS },
+  { id: 'puasa-senin-kamis', label: 'Puasa Senin Kamis', period: 'pagi', priority: 7, days: [1, 4] },
+  { id: 'mandi-pagi', label: 'Mandi pagi', description: 'Setelah olahraga pagi', period: 'pagi', priority: 8 },
 
   // Siang
   { id: 'dzuhur-masjid', label: 'Sholat dzuhur', period: 'siang', priority: 8 },
