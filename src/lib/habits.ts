@@ -71,7 +71,7 @@ export const HABITS_BY_ID: Record<string, HabitDef> = Object.fromEntries(
   HABITS.map((h) => [h.id, h]),
 );
 
-export const PERIOD_ORDER: Period[] = ['pagi', 'siang', 'sore', 'mindset', 'malam', 'limit'];
+export const PERIOD_ORDER: Period[] = ['pagi', 'siang', 'sore', 'malam', 'limit', 'mindset'];
 
 export const PERIOD_LABELS: Record<Period, string> = {
   pagi: 'Pagi',
