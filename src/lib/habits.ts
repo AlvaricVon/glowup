@@ -3,10 +3,20 @@ import type { HabitDef, Period } from './types';
 // Days: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
 const REST_DAYS = [0, 2, 3, 5, 6]; // Tuesday, Wednesday, Friday, Saturday, Sunday (Not Mon/Thu)
 
+/** Upload-konten platform rotates per weekday, starting Monday = ML TikTok. */
+const CONTENT_PLATFORMS: readonly string[] = ['ML TikTok', 'OddlyLab YT Shorts', 'Alvaric TikTok'];
+/** Day-of-week (0=Sun..6=Sat) -> platform for that day. Monday(1) -> index 0. */
+function contentPlatformForDay(day: number): string {
+  const offset = day === 0 ? 6 : day - 1; // Monday(1)->0, ..., Sunday(0)->6
+  return CONTENT_PLATFORMS[offset % CONTENT_PLATFORMS.length];
+}
+
 export const HABITS: HabitDef[] = [
   // Pagi
-  { id: 'grooming-pagi', label: 'Sikat gigi & Cuci muka', description: 'Pake sabun muka', period: 'pagi', priority: 1 },
+  { id: 'minum-pagi', label: 'Minum 2 gelas', description: 'Setelah bangun pagi', period: 'pagi', priority: 0.5 },
+  { id: 'grooming-pagi', label: 'Sikat gigi & Cuci Muka', description: 'Pake sabun muka', period: 'pagi', priority: 1 },
   { id: 'subuh-masjid', label: 'Sholat subuh', period: 'pagi', priority: 2 },
+  { id: 'baca-quran', label: 'Baca Quran 5 halaman', description: 'Setelah sholat subuh', period: 'pagi', priority: 2.5 },
   { id: 'beresin-kamar', label: 'Beresin kamar', description: 'Wajib setiap bangun tidur', period: 'pagi', priority: 3 },
   { id: 'physical-pagi', label: 'Hang dead + Skipping + Peregangan', description: 'Hang 30s+ (Target 3m -> Pull up), Skipping 5m, Stretching', period: 'pagi', priority: 4 },
   { id: 'pushups-pagi', label: 'Push-ups (10-20x)', description: 'Sebelum jalan pagi', period: 'pagi', priority: 5, days: REST_DAYS },
@@ -17,38 +27,57 @@ export const HABITS: HabitDef[] = [
 
   // Siang
   { id: 'dzuhur-masjid', label: 'Sholat dzuhur', period: 'siang', priority: 8 },
+  { id: 'minum-dzuhur', label: 'Minum 2 gelas', description: 'Setelah sholat dzuhur', period: 'siang', priority: 8.5 },
   { id: 'pushups-dzuhur', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'siang', priority: 9, days: REST_DAYS },
 
   // Sore
   { id: 'ashar-masjid', label: 'Sholat ashar', period: 'sore', priority: 10 },
+  { id: 'minum-ashar', label: 'Minum 2 gelas', description: 'Setelah sholat ashar', period: 'sore', priority: 10.5 },
   { id: 'pushups-ashar', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'sore', priority: 11, days: REST_DAYS },
+  { id: 'workout-sore', label: 'Workout', description: 'Progress workout sore (hari non-Senin/Kamis), sebelum mandi sore', period: 'sore', priority: 11.5, days: REST_DAYS },
   { id: 'mandi-sore', label: 'Mandi sore/malem', period: 'sore', priority: 12 },
 
+  // Mindset (new section: setelah Sore, sebelum Limit Harian)
+  { id: 'postur-baik', label: 'Selalu pasang postur yang baik/bagus', description: 'Bahu lurus, duduk tegap', period: 'mindset', priority: 20 },
+  { id: 'talk-less-do-more', label: 'Talk less do more', period: 'mindset', priority: 21 },
+  { id: 'selalu-tenang', label: 'Selalu tenang', description: 'Hindari emosi, tetap tenang', period: 'mindset', priority: 22 },
+
   // Malam
-  { id: 'maghrib-masjid', label: 'Sholat maghrib', period: 'malam', priority: 13 },
-  { id: 'pushups-maghrib', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'malam', priority: 14, days: REST_DAYS },
-  { id: 'isya-masjid', label: 'Sholat isya', period: 'malam', priority: 15 },
-  { id: 'pushups-isya', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'malam', priority: 16, days: REST_DAYS },
-  { id: 'selesai-semua', label: 'Selesaikan semua kewajiban & masalah', description: 'WA to-do list & masalah hari ini beres', period: 'malam', priority: 17 },
-  { id: 'grooming-malam', label: 'Sikat gigi & Cuci muka', description: 'Sebelum tidur', period: 'malam', priority: 18 },
-  { id: 'tidur-10', label: 'Tidur sebelum jam 10', period: 'malam', priority: 19 },
+  { id: 'maghrib-masjid', label: 'Sholat maghrib', period: 'malam', priority: 23 },
+  { id: 'minum-maghrib', label: 'Minum 2 gelas', description: 'Setelah sholat maghrib', period: 'malam', priority: 23.5 },
+  { id: 'pushups-maghrib', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'malam', priority: 24, days: REST_DAYS },
+  { id: 'isya-masjid', label: 'Sholat isya', period: 'malam', priority: 25 },
+  { id: 'minum-isya', label: 'Minum 2 gelas', description: 'Setelah sholat isya', period: 'malam', priority: 25.5 },
+  { id: 'pushups-isya', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'malam', priority: 26, days: REST_DAYS },
+  { id: 'selesai-semua', label: 'Selesaikan semua kewajiban & masalah', description: 'WA to-do list & masalah hari ini beres', period: 'malam', priority: 27 },
+  { id: 'grooming-malam', label: 'Sikat gigi & Cuci Muka', description: 'Sebelum tidur', period: 'malam', priority: 28 },
+  { id: 'tidur-10', label: 'Tidur sebelum jam 10', period: 'malam', priority: 29 },
 
   // Limit
-  { id: 'no-overeat', label: 'Makan secukupnya', description: 'Gak overeat', period: 'limit', priority: 20 },
-  { id: 'no-porn', label: 'No porn', description: 'Seharian gak nonton/liat', period: 'limit', priority: 21 },
-  { id: 'no-scroll', label: 'No scrolling sosmed', description: 'Buka utk keperluan spesifik OK', period: 'limit', priority: 22 },
+  {
+    id: 'upload-konten',
+    label: 'Upload konten',
+    period: 'limit',
+    priority: 19.5,
+    descriptionForDay: (day) =>
+      `Hari ini: ${contentPlatformForDay(day)} — (ML TikTok · OddlyLab YT Shorts · Alvaric TikTok)`,
+  },
+  { id: 'no-overeat', label: 'Makan secukupnya', description: 'Gak overeat', period: 'limit', priority: 30 },
+  { id: 'no-porn', label: 'No porn', description: 'Seharian gak nonton/liat', period: 'limit', priority: 31 },
+  { id: 'no-scroll', label: 'No scrolling sosmed', description: 'Buka utk keperluan spesifik OK', period: 'limit', priority: 32 },
 ];
 
 export const HABITS_BY_ID: Record<string, HabitDef> = Object.fromEntries(
   HABITS.map((h) => [h.id, h]),
 );
 
-export const PERIOD_ORDER: Period[] = ['pagi', 'siang', 'sore', 'malam', 'limit'];
+export const PERIOD_ORDER: Period[] = ['pagi', 'siang', 'sore', 'mindset', 'malam', 'limit'];
 
 export const PERIOD_LABELS: Record<Period, string> = {
   pagi: 'Pagi',
   siang: 'Siang',
   sore: 'Sore',
+  mindset: 'Mindset',
   malam: 'Malam',
   limit: 'Limit Harian',
   conditional: 'Kondisional',

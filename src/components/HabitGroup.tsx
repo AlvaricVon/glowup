@@ -1,4 +1,4 @@
-import { Coffee, Moon, Sun, Sunrise, Sunset, ToggleLeft } from 'lucide-react';
+import { Brain, Coffee, Moon, Sun, Sunrise, Sunset, ToggleLeft } from 'lucide-react';
 import type { HabitDef, HabitEntry, Period } from '../lib/types';
 import { HabitCheckbox } from './HabitCheckbox';
 
@@ -15,6 +15,7 @@ const ICONS: Record<Period, typeof Sun> = {
   siang: Sun,
   sore: Sunset,
   malam: Moon,
+  mindset: Brain,
   limit: Coffee,
   conditional: ToggleLeft,
 };

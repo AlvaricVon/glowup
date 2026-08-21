@@ -1,4 +1,4 @@
-export type Period = 'pagi' | 'siang' | 'sore' | 'malam' | 'limit' | 'conditional';
+export type Period = 'pagi' | 'siang' | 'sore' | 'mindset' | 'malam' | 'limit' | 'conditional';
 
 export type ConditionalKey = never;
 
@@ -12,6 +12,8 @@ export interface HabitDef {
   days?: number[];
   /** If set, habit only shows when the matching conditional toggle in the day entry is true. */
   conditional?: ConditionalKey;
+  /** If set, overrides `description` with a day-of-week aware string (0=Sun..6=Sat). */
+  descriptionForDay?: (day: number) => string;
 }
 
 export interface HabitEntry {

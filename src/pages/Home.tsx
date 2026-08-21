@@ -41,11 +41,17 @@ export function Home() {
     const currentDay = new Date(today.date).getDay();
     return PERIOD_ORDER.map((p) => {
       const all = HABITS.filter((h) => h.period === p);
-      const visible = all.filter((h) => {
-        if (h.days && !h.days.includes(currentDay)) return false;
-        if (!h.conditional) return true;
-        return today.conditionals[h.conditional];
-      });
+      const visible = all
+        .filter((h) => {
+          if (h.days && !h.days.includes(currentDay)) return false;
+          if (!h.conditional) return true;
+          return today.conditionals[h.conditional];
+        })
+        .map((h) =>
+          h.descriptionForDay
+            ? { ...h, description: h.descriptionForDay(currentDay) }
+            : h,
+        );
       return { period: p, label: PERIOD_LABELS[p], habits: visible };
     }).filter((g) => g.habits.length > 0);
   }, [today]);
