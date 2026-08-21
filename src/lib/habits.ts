@@ -27,12 +27,12 @@ export const HABITS: HabitDef[] = [
 
   // Siang
   { id: 'dzuhur-masjid', label: 'Sholat dzuhur', period: 'siang', priority: 8 },
-  { id: 'minum-dzuhur', label: 'Minum 2 gelas', description: 'Setelah sholat dzuhur', period: 'siang', priority: 8.5 },
+  { id: 'minum-dzuhur', label: 'Minum 2 gelas', description: 'Setelah sholat dzuhur', period: 'siang', priority: 8.5, days: REST_DAYS },
   { id: 'pushups-dzuhur', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'siang', priority: 9, days: REST_DAYS },
 
   // Sore
   { id: 'ashar-masjid', label: 'Sholat ashar', period: 'sore', priority: 10 },
-  { id: 'minum-ashar', label: 'Minum 2 gelas', description: 'Setelah sholat ashar', period: 'sore', priority: 10.5 },
+  { id: 'minum-ashar', label: 'Minum 2 gelas', description: 'Setelah sholat ashar', period: 'sore', priority: 10.5, days: REST_DAYS },
   { id: 'pushups-ashar', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'sore', priority: 11, days: REST_DAYS },
   { id: 'workout-sore', label: 'Workout', description: 'Progress workout sore (hari non-Senin/Kamis), sebelum mandi sore', period: 'sore', priority: 11.5, days: REST_DAYS },
   { id: 'mandi-sore', label: 'Mandi sore/malem', period: 'sore', priority: 12 },
@@ -79,6 +79,6 @@ export const PERIOD_LABELS: Record<Period, string> = {
   sore: 'Sore',
   mindset: 'Mindset',
   malam: 'Malam',
-  limit: 'Limit Harian',
+  limit: 'Target Harian',
   conditional: 'Kondisional',
 };
