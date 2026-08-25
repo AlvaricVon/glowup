@@ -75,7 +75,7 @@ function MealCard({ meal, index }: { meal: Meal; index: number }) {
                 </span>
               )}
             </div>
-            <p className="truncate text-sm text-neutral-600 dark:text-neutral-400">{meal.menu}</p>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 break-words">{meal.menu}</p>
           </div>
         </div>
         {expanded ? <ChevronUp size={18} className="text-neutral-400" /> : <ChevronDown size={18} className="text-neutral-400" />}
