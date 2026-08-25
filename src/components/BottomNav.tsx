@@ -1,6 +1,6 @@
-import { BarChart3, Home, Settings as SettingsIcon } from 'lucide-react';
+import { BarChart3, Home, Settings as SettingsIcon, Utensils } from 'lucide-react';
 
-export type Tab = 'today' | 'stats' | 'settings';
+export type Tab = 'today' | 'stats' | 'nutrition' | 'settings';
 
 interface Props {
   active: Tab;
@@ -10,6 +10,7 @@ interface Props {
 const tabs: { id: Tab; label: string; icon: typeof Home }[] = [
   { id: 'today', label: 'Today', icon: Home },
   { id: 'stats', label: 'Stats', icon: BarChart3 },
+  { id: 'nutrition', label: 'Nutrition', icon: Utensils },
   { id: 'settings', label: 'Settings', icon: SettingsIcon },
 ];
 

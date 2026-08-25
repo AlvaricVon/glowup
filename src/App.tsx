@@ -4,6 +4,7 @@ import { useDayRollover } from './hooks/useDayRollover';
 import { useTheme } from './hooks/useTheme';
 import { startReminderLoop, stopReminderLoop } from './lib/notifications';
 import { Home } from './pages/Home';
+import { Nutrition } from './pages/Nutrition';
 import { Onboarding } from './pages/Onboarding';
 import { Settings } from './pages/Settings';
 import { Stats } from './pages/Stats';
@@ -48,6 +49,7 @@ export default function App() {
       <main>
         {tab === 'today' && <Home />}
         {tab === 'stats' && <Stats />}
+        {tab === 'nutrition' && <Nutrition />}
         {tab === 'settings' && <Settings />}
       </main>
       <BottomNav active={tab} onChange={setTab} />
