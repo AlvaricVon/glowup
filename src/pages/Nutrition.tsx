@@ -15,7 +15,7 @@ type Principle = {
 
 const DAILY_MEALS: Meal[] = [
   { time: 'Bangun tidur', menu: 'Air putih 2 gelas', notes: 'Udah rutin lu' },
-  { time: 'Sarapan (abis mandi pagi)', menu: '2-3 telur (rebus/orak-arik minyak dikit) + oat/ubi rebus + buah', notes: 'Porsi sampai kenyang wajar, jangan dikurang-kurangin' },
+  { time: 'Sarapan (abis mandi pagi)', menu: '2-3 telur (rebus/orak-arik minyak dikit) + oat/ubi rebus + buah + susu full cream', notes: 'Porsi sampai kenyang wajar, jangan dikurang-kurangin' },
   { time: 'Snack siang (opsional)', menu: 'Yogurt plain atau segenggam kacang', notes: 'Kalau lapar sebelum makan siang', isOptional: true },
   { time: 'Makan siang (abis Dzuhur)', menu: 'Ayam/ikan panggang-bakar + sayur banyak (tumis/rebus) + tahu/tempe', notes: 'Protein utama hari ini' },
   { time: 'Snack sore (abis Ashar)', menu: 'Telur rebus atau buah', notes: '' },
