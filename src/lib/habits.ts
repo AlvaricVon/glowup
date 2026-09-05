@@ -19,7 +19,6 @@ export const HABITS: HabitDef[] = [
   { id: 'baca-quran', label: 'Baca Quran 5 halaman', description: 'Setelah sholat subuh', period: 'pagi', priority: 2.5 },
   { id: 'beresin-kamar', label: 'Beresin kamar', description: 'Wajib setiap bangun tidur', period: 'pagi', priority: 3 },
   { id: 'physical-pagi', label: 'Hang dead + Skipping + Peregangan', description: 'Hang 30s+ (Target 3m -> Pull up), Skipping 5m, Stretching', period: 'pagi', priority: 4 },
-  { id: 'pushups-pagi', label: 'Push-ups (10-20x)', description: 'Sebelum jalan pagi', period: 'pagi', priority: 5, days: REST_DAYS },
   { id: 'jogging-pagi', label: 'Jalan pagi', period: 'pagi', priority: 6, days: REST_DAYS },
   { id: 'puasa-senin-kamis', label: 'Puasa Senin Kamis', period: 'pagi', priority: 7, days: [1, 4] },
   { id: 'mandi-pagi', label: 'Mandi pagi', description: 'Setelah olahraga pagi', period: 'pagi', priority: 8 },
@@ -29,12 +28,10 @@ export const HABITS: HabitDef[] = [
   // Siang
   { id: 'dzuhur-masjid', label: 'Sholat dzuhur', period: 'siang', priority: 8 },
   { id: 'minum-dzuhur', label: 'Minum 2 gelas', description: 'Setelah sholat dzuhur', period: 'siang', priority: 8.5, days: REST_DAYS },
-  { id: 'pushups-dzuhur', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'siang', priority: 9, days: REST_DAYS },
 
   // Sore
   { id: 'ashar-masjid', label: 'Sholat ashar', period: 'sore', priority: 10 },
   { id: 'minum-ashar', label: 'Minum 2 gelas', description: 'Setelah sholat ashar', period: 'sore', priority: 10.5, days: REST_DAYS },
-  { id: 'pushups-ashar', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'sore', priority: 11, days: REST_DAYS },
   { id: 'workout-sore', label: 'Workout', description: 'Progress workout sore (hari non-Senin/Kamis), sebelum mandi sore', period: 'sore', priority: 11.5, days: REST_DAYS },
   { id: 'mandi-sore', label: 'Mandi sore/malem', period: 'sore', priority: 12 },
 
@@ -46,10 +43,8 @@ export const HABITS: HabitDef[] = [
   // Malam
   { id: 'maghrib-masjid', label: 'Sholat maghrib', period: 'malam', priority: 23 },
   { id: 'minum-maghrib', label: 'Minum 2 gelas', description: 'Setelah sholat maghrib', period: 'malam', priority: 23.5 },
-  { id: 'pushups-maghrib', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'malam', priority: 24, days: REST_DAYS },
   { id: 'isya-masjid', label: 'Sholat isya', period: 'malam', priority: 25 },
   { id: 'minum-isya', label: 'Minum 2 gelas', description: 'Setelah sholat isya', period: 'malam', priority: 25.5 },
-  { id: 'pushups-isya', label: 'Push-ups (10-20x)', description: 'Habis sholat', period: 'malam', priority: 26, days: REST_DAYS },
   { id: 'selesai-semua', label: 'Selesaikan semua kewajiban & masalah', description: 'WA to-do list & masalah hari ini beres', period: 'malam', priority: 27 },
   { id: 'grooming-malam', label: 'Sikat gigi & Cuci Muka', description: 'Sebelum tidur', period: 'malam', priority: 28 },
   { id: 'tidur-10', label: 'Tidur sebelum jam 10', period: 'malam', priority: 29 },
