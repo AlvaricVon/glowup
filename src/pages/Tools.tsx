@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { ArrowLeft, ChevronRight, LayoutGrid, Target, Utensils, Wallet } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ClipboardList, LayoutGrid, Target, Utensils, Wallet } from 'lucide-react';
 import { Finance } from './Finance';
 import { Nutrition } from './Nutrition';
 import { Projects } from './Projects';
+import { Todos } from './Todos';
 
-type Tool = 'menu' | 'nutrition' | 'finance' | 'projects';
+type Tool = 'menu' | 'nutrition' | 'finance' | 'projects' | 'todos';
 
 const TOOLS: { id: Exclude<Tool, 'menu'>; name: string; desc: string; icon: typeof Target }[] = [
+  { id: 'todos', name: 'To-Do', desc: 'Catatan harian & daftar tugas', icon: ClipboardList },
   { id: 'nutrition', name: 'Nutrition', desc: 'Jadwal & prinsip makan harian', icon: Utensils },
   { id: 'finance', name: 'Keuangan', desc: 'Alokasi pendapatan otomatis', icon: Wallet },
   { id: 'projects', name: 'Projects', desc: 'Prioritas bisnis yang mau disuksesin', icon: Target },
@@ -76,6 +78,9 @@ export function Tools() {
       </div>
       <div className={view === 'projects' ? '' : 'hidden'}>
         <Projects />
+      </div>
+      <div className={view === 'todos' ? '' : 'hidden'}>
+        <Todos />
       </div>
     </>
   );
