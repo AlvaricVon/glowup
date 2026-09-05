@@ -19,8 +19,8 @@ const RULES: Rule[] = [
     description: 'Hindari emosi berlebihan, tetap kalem di kondisi apa pun.',
   },
   {
-    title: 'Bulu wajah dicukur',
-    description: 'Jenggot, jambang, kumis, dan jembit dicukur kalau udah terlalu kelihatan atau berantakan.',
+    title: 'Bulu dicukur',
+    description: 'Jenggot, jambang, kumis, dan jembut dicukur kalau udah terlalu kelihatan atau berantakan.',
   },
   {
     title: 'Bulu ketek dicabut',
@@ -32,7 +32,7 @@ const RULES: Rule[] = [
   },
   {
     title: 'Baju sobek dijahit',
-    description: 'Tiap mau mandi, jait dulu baju yang mau dipakai kalau sobek atau koyak.',
+    description: 'Pas mau mandi, kalau baju yang mau dipakai sobek atau koyak, jait dulu. Kalau nggak sobek, nggak usah.',
   },
 ];
 
