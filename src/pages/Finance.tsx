@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Coins, History as HistoryIcon, Trash2, Wallet } from 'lucide-react';
+import { Coins, History as HistoryIcon, Info, Trash2, Wallet } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { ALLOCATION_RULES, calculateAllocation, formatRupiah } from '../lib/finance';
 
@@ -53,6 +53,16 @@ export function Finance() {
           Masukkan pendapatan, dibagi otomatis ke {ALLOCATION_RULES.length} kantong
         </p>
       </header>
+
+      {/* Allocation note */}
+      <div className="flex items-start gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 dark:border-brand-900/30 dark:bg-brand-900/20">
+        <Info size={16} className="mt-0.5 shrink-0 text-brand-500" />
+        <p className="text-sm leading-relaxed text-brand-800 dark:text-brand-200">
+          Alokasi ini dihitung dari <span className="font-semibold">sisa pendapatan setelah kebutuhan Nutrition sebulan</span>{' '}
+          disisihkan dulu. Setiap abis gajian, wajib pisahkan budget Nutrition sebulan,
+          sisanya baru dibagi ke {ALLOCATION_RULES.length} kantong di bawah.
+        </p>
+      </div>
 
       {/* Income input */}
       <form

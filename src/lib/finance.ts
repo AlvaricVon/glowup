@@ -10,10 +10,12 @@ export interface Allocation extends AllocationRule {
 
 export const ALLOCATION_RULES: readonly AllocationRule[] = [
   { name: 'BTC & ETH Indodax', percentage: 10, color: '#f7931a' },
-  { name: 'Pasar Uang Bibit', percentage: 20, color: '#4f46e5' },
-  { name: 'Emas Pluang', percentage: 25, color: '#f59e0b' },
-  { name: 'Bisnis BCA', percentage: 30, color: '#003399' },
-  { name: 'Dana Darurat BSI', percentage: 15, color: '#10b981' },
+  { name: 'Pasar Uang Bibit', percentage: 25, color: '#4f46e5' },
+  { name: 'Emas Dana & Pluang', percentage: 20, color: '#f59e0b' },
+  { name: 'Things to buy', percentage: 10, color: '#ec4899' },
+  { name: 'Simpanan Bank Jago', percentage: 15, color: '#0ea5e9' },
+  { name: 'Bisnis BCA', percentage: 15, color: '#003399' },
+  { name: 'Dana Darurat BSI', percentage: 5, color: '#10b981' },
 ];
 
 export function calculateAllocation(amount: number): Allocation[] {
