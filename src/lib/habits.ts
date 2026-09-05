@@ -3,14 +3,6 @@ import type { HabitDef, Period } from './types';
 // Days: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
 const REST_DAYS = [0, 2, 3, 5, 6]; // Tuesday, Wednesday, Friday, Saturday, Sunday (Not Mon/Thu)
 
-/** Upload-konten platform rotates per weekday, starting Monday = ML TikTok. */
-const CONTENT_PLATFORMS: readonly string[] = ['ML TikTok', 'OddlyLab YT Shorts', 'Alvaric TikTok'];
-/** Day-of-week (0=Sun..6=Sat) -> platform for that day. Monday(1) -> index 0. */
-function contentPlatformForDay(day: number): string {
-  const offset = day === 0 ? 6 : day - 1; // Monday(1)->0, ..., Sunday(0)->6
-  return CONTENT_PLATFORMS[offset % CONTENT_PLATFORMS.length];
-}
-
 export const HABITS: HabitDef[] = [
   // Pagi
   { id: 'minum-pagi', label: 'Minum 2 gelas', description: 'Setelah bangun pagi', period: 'pagi', priority: 0.5 },
@@ -19,7 +11,7 @@ export const HABITS: HabitDef[] = [
   { id: 'baca-quran', label: 'Baca Quran 5 halaman', description: 'Setelah sholat subuh', period: 'pagi', priority: 2.5 },
   { id: 'beresin-kamar', label: 'Beresin kamar', description: 'Wajib setiap bangun tidur', period: 'pagi', priority: 3 },
   { id: 'physical-pagi', label: 'Hang dead + Skipping + Peregangan', description: 'Hang 30s+ (Target 3m -> Pull up), Skipping 5m, Stretching', period: 'pagi', priority: 4 },
-  { id: 'jogging-pagi', label: 'Jalan pagi', period: 'pagi', priority: 6, days: REST_DAYS },
+  { id: 'jogging-pagi', label: '1 hour morning walk', period: 'pagi', priority: 6, days: REST_DAYS },
   { id: 'puasa-senin-kamis', label: 'Puasa Senin Kamis', period: 'pagi', priority: 7, days: [1, 4] },
   { id: 'mandi-pagi', label: 'Mandi pagi', description: 'Setelah olahraga pagi', period: 'pagi', priority: 8 },
   { id: 'baca-buku', label: 'Baca buku min 10 halaman', description: 'Setelah mandi pagi', period: 'pagi', priority: 8.5 },
@@ -35,11 +27,6 @@ export const HABITS: HabitDef[] = [
   { id: 'workout-sore', label: 'Workout', description: 'Progress workout sore (hari non-Senin/Kamis), sebelum mandi sore', period: 'sore', priority: 11.5, days: REST_DAYS },
   { id: 'mandi-sore', label: 'Mandi sore/malem', period: 'sore', priority: 12 },
 
-  // Mindset (new section: setelah Sore, sebelum Limit Harian)
-  { id: 'postur-baik', label: 'Selalu pasang postur yang baik/bagus', description: 'Bahu lurus, duduk tegap', period: 'mindset', priority: 20 },
-  { id: 'talk-less-do-more', label: 'Talk less do more', period: 'mindset', priority: 21 },
-  { id: 'selalu-tenang', label: 'Selalu tenang', description: 'Hindari emosi, tetap tenang', period: 'mindset', priority: 22 },
-
   // Malam
   { id: 'maghrib-masjid', label: 'Sholat maghrib', period: 'malam', priority: 23 },
   { id: 'minum-maghrib', label: 'Minum 2 gelas', description: 'Setelah sholat maghrib', period: 'malam', priority: 23.5 },
@@ -53,10 +40,9 @@ export const HABITS: HabitDef[] = [
   {
     id: 'upload-konten',
     label: 'Upload konten',
+    description: 'OddlyLab · ML · TikTok',
     period: 'limit',
     priority: 19.5,
-    descriptionForDay: (day) =>
-      `Hari ini: ${contentPlatformForDay(day)} — (ML TikTok · OddlyLab YT Shorts · Alvaric TikTok)`,
   },
   { id: 'no-overeat', label: 'Makan secukupnya', description: 'Gak overeat', period: 'limit', priority: 30 },
   { id: 'no-porn', label: 'No porn', description: 'Seharian gak nonton/liat', period: 'limit', priority: 31 },
@@ -67,7 +53,7 @@ export const HABITS_BY_ID: Record<string, HabitDef> = Object.fromEntries(
   HABITS.map((h) => [h.id, h]),
 );
 
-export const PERIOD_ORDER: Period[] = ['pagi', 'siang', 'sore', 'malam', 'limit', 'mindset'];
+export const PERIOD_ORDER: Period[] = ['pagi', 'siang', 'sore', 'malam', 'limit'];
 
 export const PERIOD_LABELS: Record<Period, string> = {
   pagi: 'Pagi',
