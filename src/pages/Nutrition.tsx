@@ -162,7 +162,7 @@ export function Nutrition() {
       </section>
 
       <p className="px-2 pt-2 text-center text-[11px] text-neutral-400">
-        GlowUp Nutrition · Read-only reference
+        Voskhod Nutrition · Read-only reference
       </p>
     </div>
   );

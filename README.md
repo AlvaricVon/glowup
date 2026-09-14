@@ -1,4 +1,4 @@
-# GlowUp
+# Voskhod
 
 PWA tracker harian buat program self-improvement. Local-first — semua data di IndexedDB device lo, gak ada server, gak ada login. Installable di HP Android kayak app native, offline-ready.
 
@@ -92,7 +92,7 @@ netlify deploy --prod --dir=dist
 1. Buka URL deploy lo (Vercel/Netlify) di **Chrome Android**.
 2. Setelah load, ada banner "Install" / icon "+" di address bar — tap.
 3. Atau menu titik tiga → **Install app** / **Add to Home screen**.
-4. App muncul di home screen sebagai icon GlowUp. Buka tanpa browser bar, persis kayak app native.
+4. App muncul di home screen sebagai icon Voskhod. Buka tanpa browser bar, persis kayak app native.
 
 > Buat reliability max (terutama notifikasi & offline), pastiin lo install ke home screen — bukan cuma bookmark.
 

@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.svg', 'icons/icon.svg'],
       manifest: {
-        name: 'GlowUp — Self Improvement Tracker',
-        short_name: 'GlowUp',
+        name: 'Voskhod — Self Improvement Tracker',
+        short_name: 'Voskhod',
         description: 'Track habit harian buat program self-improvement lo. Local-first, offline-ready, gak ada login.',
         theme_color: '#10b981',
         background_color: '#0a0a0a',

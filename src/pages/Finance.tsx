@@ -70,7 +70,7 @@ export function Finance() {
         <div className="space-y-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
           <p>
             <span className="font-semibold text-neutral-800 dark:text-neutral-100">Things to buy</span> dipakai khusus
-            buat beli barang yang lo butuh buat jalanin progress/track di GlowUp — bukan buat jajan gak jelas.
+            buat beli barang yang lo butuh buat jalanin progress/track di Voskhod — bukan buat jajan gak jelas.
           </p>
           <p>
             <span className="font-semibold text-neutral-800 dark:text-neutral-100">Dana Darurat</span> gak boleh dipake buat
@@ -222,7 +222,7 @@ export function Finance() {
         </section>
 
       <p className="px-2 pt-2 text-center text-[11px] text-neutral-400">
-        GlowUp Keuangan · {ALLOCATION_RULES.reduce((sum, r) => sum + r.percentage, 0)}% dari pendapatan dialokasikan
+        Voskhod Keuangan · {ALLOCATION_RULES.reduce((sum, r) => sum + r.percentage, 0)}% dari pendapatan dialokasikan
       </p>
     </div>
   );

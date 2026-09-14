@@ -71,7 +71,7 @@ export function SelfRules() {
         ))}
       </div>
 
-      <p className="px-2 pt-2 text-center text-[11px] text-neutral-400">GlowUp Self Rules · Terapkan setiap hari</p>
+      <p className="px-2 pt-2 text-center text-[11px] text-neutral-400">Voskhod Self Rules · Terapkan setiap hari</p>
     </div>
   );
 }

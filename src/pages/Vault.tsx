@@ -353,7 +353,7 @@ export function Vault() {
       )}
 
       <p className="px-2 pt-2 text-center text-[11px] text-neutral-400">
-        GlowUp Vault · Disimpan hanya di perangkat kamu
+        Voskhod Vault · Disimpan hanya di perangkat kamu
       </p>
 
       {toast && (

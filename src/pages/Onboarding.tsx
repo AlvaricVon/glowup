@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Bell, BellOff, Check, Flame, Sparkles } from 'lucide-react';
+import { ArrowRight, Bell, BellOff, Check, Flame, Sparkles, Sunrise } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { ensurePermission } from '../lib/notifications';
 
@@ -51,9 +51,9 @@ export function Onboarding() {
           {step === 'welcome' && (
             <div className="animate-fade-in text-center">
               <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-brand-400 to-brand-700 shadow-xl shadow-brand-500/30">
-                <span className="text-5xl font-extrabold text-white">G</span>
+                <Sunrise size={52} strokeWidth={2.5} className="text-white" />
               </div>
-              <h1 className="text-3xl font-extrabold text-neutral-900 dark:text-neutral-100">GlowUp</h1>
+              <h1 className="text-3xl font-extrabold text-neutral-900 dark:text-neutral-100">Voskhod</h1>
               <p className="mt-2 text-base text-neutral-600 dark:text-neutral-400">
                 Tracker harian buat program self-improvement lo. Local-first. Offline. Privacy by default.
               </p>

@@ -40,7 +40,7 @@ export function Settings() {
   const handleExport = async () => {
     try {
       const payload = await exportAll();
-      downloadJSON(payload, `glowup-backup-${payload.exportedAt.slice(0, 10)}.json`);
+      downloadJSON(payload, `voskhod-backup-${payload.exportedAt.slice(0, 10)}.json`);
       flash('Berhasil export ✓');
     } catch (e) {
       flash(e instanceof Error ? e.message : 'Gagal export');
@@ -198,7 +198,7 @@ export function Settings() {
       </Section>
 
       <p className="px-2 pt-2 text-center text-[11px] text-neutral-400">
-        GlowUp v1.0 · local-first · made with intention
+        Voskhod v1.0 · local-first · made with intention
       </p>
 
       <ConfirmModal

@@ -326,7 +326,7 @@ export function Todos() {
         </>
       )}
 
-      <p className="px-2 pt-2 text-center text-[11px] text-neutral-400">GlowUp To-Do · Catatan disimpan di perangkat</p>
+      <p className="px-2 pt-2 text-center text-[11px] text-neutral-400">Voskhod To-Do · Catatan disimpan di perangkat</p>
     </div>
   );
 }

@@ -224,7 +224,7 @@ export function InvestAlerts() {
       </div>
 
       <p className="px-2 pt-2 text-center text-[11px] text-neutral-400">
-        GlowUp Invest Alerts · Data cuma di perangkat lo
+        Voskhod Invest Alerts · Data cuma di perangkat lo
       </p>
 
       {toast && (

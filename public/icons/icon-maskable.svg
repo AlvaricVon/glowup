@@ -6,5 +6,6 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" fill="url(#g)"/>
-  <text x="256" y="338" font-family="Inter, system-ui, sans-serif" font-size="240" font-weight="800" text-anchor="middle" fill="white">G</text>
+  <circle cx="256" cy="205" r="84" fill="#ffd65e"/>
+  <rect x="0" y="295" width="512" height="217" fill="rgba(255,255,255,0.25)"/>
 </svg>

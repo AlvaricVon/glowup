@@ -74,7 +74,7 @@ function tick(reminders: ReminderConfig[], soundEnabled: boolean) {
       const k = `${key}::${r.id}`;
       if (!state.fired.has(k)) {
         state.fired.add(k);
-        void showNotification('GlowUp', r.label, soundEnabled);
+        void showNotification('Voskhod', r.label, soundEnabled);
       }
     }
   }

@@ -4,7 +4,7 @@ import type { AppMeta, DayEntry, ExportPayload } from './types';
 const DB_NAME = 'glowup-db';
 const DB_VERSION = 1;
 
-interface GlowUpDB extends DBSchema {
+interface VoskhodDB extends DBSchema {
   days: {
     key: string;
     value: DayEntry;
@@ -16,11 +16,11 @@ interface GlowUpDB extends DBSchema {
   };
 }
 
-let dbPromise: Promise<IDBPDatabase<GlowUpDB>> | null = null;
+let dbPromise: Promise<IDBPDatabase<VoskhodDB>> | null = null;
 
 function getDB() {
   if (!dbPromise) {
-    dbPromise = openDB<GlowUpDB>(DB_NAME, DB_VERSION, {
+    dbPromise = openDB<VoskhodDB>(DB_NAME, DB_VERSION, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('days')) {
           const days = db.createObjectStore('days', { keyPath: 'date' });

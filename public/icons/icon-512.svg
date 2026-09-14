@@ -4,7 +4,11 @@
       <stop offset="0%" stop-color="#34d399"/>
       <stop offset="100%" stop-color="#059669"/>
     </linearGradient>
+    <clipPath id="c"><rect width="512" height="512" rx="112"/></clipPath>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#g)"/>
-  <text x="256" y="368" font-family="Inter, system-ui, sans-serif" font-size="340" font-weight="800" text-anchor="middle" fill="white">G</text>
+  <g clip-path="url(#c)">
+    <circle cx="256" cy="205" r="84" fill="#ffd65e"/>
+    <rect x="0" y="295" width="512" height="217" fill="rgba(255,255,255,0.25)"/>
+  </g>
 </svg>
