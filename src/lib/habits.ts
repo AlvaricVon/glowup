@@ -44,6 +44,7 @@ export const HABITS: HabitDef[] = [
     period: 'limit',
     priority: 19.5,
   },
+  { id: 'update-invest', label: 'Update Invest Alerts', description: 'Catat harga EMAS, Emas Pluang, BTC, ETH & Pasar Uang', period: 'limit', priority: 21 },
   { id: 'no-overeat', label: 'Makan secukupnya', description: 'Gak overeat', period: 'limit', priority: 30 },
   { id: 'no-porn', label: 'No porn', description: 'Seharian gak nonton/liat', period: 'limit', priority: 31 },
   { id: 'no-scroll', label: 'No scrolling sosmed', description: 'Buka utk keperluan spesifik OK', period: 'limit', priority: 32 },

@@ -1,4 +1,4 @@
-export type AssetKey = 'emas' | 'btc' | 'eth' | 'pasaruang';
+export type AssetKey = 'emas' | 'emaspluang' | 'btc' | 'eth' | 'pasaruang';
 
 export interface AssetInfo {
   key: AssetKey;
@@ -8,7 +8,8 @@ export interface AssetInfo {
 }
 
 export const ASSETS: readonly AssetInfo[] = [
-  { key: 'emas', name: 'EMAS (Emas Dana & Pluang)', short: 'EMAS', color: '#f59e0b' },
+  { key: 'emas', name: 'EMAS', short: 'EMAS', color: '#f59e0b' },
+  { key: 'emaspluang', name: 'Emas Pluang (Dana & Pluang)', short: 'Emas Pluang', color: '#d97706' },
   { key: 'btc', name: 'BTC (Indodax)', short: 'BTC', color: '#f7931a' },
   { key: 'eth', name: 'ETH (Indodax)', short: 'ETH', color: '#6366f1' },
   { key: 'pasaruang', name: 'Pasar Uang (Bibit - Syariah)', short: 'Pasar Uang', color: '#10b981' },

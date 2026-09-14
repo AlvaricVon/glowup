@@ -67,10 +67,19 @@ export function InvestAlerts() {
     window.setTimeout(() => setToast(null), 1800);
   };
 
-  const digits = (raw: string) => raw.replace(/[^0-9.,]/g, '').replace(',', '.');
+  const formatInput = (raw: string): string => {
+    const cleaned = raw.replace(/[^0-9.,]/g, '');
+    const num = parseFloat(cleaned.replace(/\./g, '').replace(/,/g, '.'));
+    if (!Number.isFinite(num)) return cleaned;
+    return num.toLocaleString('id-ID', { maximumFractionDigits: 8 });
+  };
+
+  const parseValue = (raw: string): number => {
+    return parseFloat(raw.replace(/\./g, '').replace(/,/g, '.'));
+  };
 
   const addPrice = (key: AssetKey) => {
-    const value = parseFloat(digits(price));
+    const value = parseValue(price);
     if (!Number.isFinite(value) || value <= 0) {
       flash('Isi harga yang valid dulu');
       return;
@@ -172,7 +181,7 @@ export function InvestAlerts() {
                         type="text"
                         inputMode="decimal"
                         value={price}
-                        onChange={(e) => setPrice(e.target.value)}
+                        onChange={(e) => setPrice(formatInput(e.target.value))}
                         placeholder="Harga hari ini"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') addPrice(a.key);
