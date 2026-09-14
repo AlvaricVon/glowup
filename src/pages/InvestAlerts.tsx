@@ -113,7 +113,7 @@ export function InvestAlerts() {
           <h1 className="text-2xl font-extrabold text-neutral-900 dark:text-neutral-100">Invest Alerts</h1>
         </div>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Catat harga harian, biar tau kapan bagusnya beli EMAS, BTC, ETH &amp; Pasar Uang.
+          Catat harga harian, biar tau kapan bagusnya beli Emas Dana, Emas Pluang, BTC, ETH &amp; Pasar Uang.
         </p>
       </header>
 
