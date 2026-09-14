@@ -192,7 +192,7 @@ export function Vault() {
     <div className="mx-auto max-w-lg space-y-5 px-4 pb-28 pt-6">
       <header className="space-y-1">
         <p className="text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-500">
-          Simpan secret
+          Manajemen Password
         </p>
         <div className="flex items-center gap-2">
           <KeyRound size={28} className="text-brand-500" />
@@ -202,7 +202,7 @@ export function Vault() {
           </span>
         </div>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Simpan &amp; manage password, cuma di perangkat lo.
+          Simpan &amp; kelola password, cuma di perangkat kamu.
         </p>
       </header>
 
@@ -214,7 +214,7 @@ export function Vault() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Nakali entry..."
+            placeholder="Cari password..."
             className="w-full rounded-xl border border-neutral-200 bg-cream-50 py-2.5 pl-9 pr-3 text-sm text-neutral-900 placeholder-neutral-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/20 dark:border-neutral-800 dark:bg-neutral-950/60 dark:text-neutral-100"
           />
         </div>
@@ -228,7 +228,7 @@ export function Vault() {
           }`}
         >
           {formOpen ? <X size={16} /> : <Plus size={16} />}
-          <span className="hidden sm:inline">{formOpen ? 'Batal' : 'Buat'}</span>
+          <span className="hidden sm:inline">{formOpen ? 'Batal' : 'Tambah password'}</span>
         </button>
       </div>
 
@@ -239,7 +239,7 @@ export function Vault() {
           <FormField label="Username / email" value={username} onChange={setUsername} placeholder="email@example.com" />
           <FormField label="Password" type="text" value={password} onChange={setPassword} placeholder="••••••••" />
           <StrengthBar value={password} />
-          <FormField label="Ganti (opsional)" value={notes} onChange={setNotes} placeholder="Kode OTP, question, dll..." />
+          <FormField label="Catatan (opsional)" value={notes} onChange={setNotes} placeholder="Kode OTP, pertanyaan keamanan, dll..." />
 
           {/* Generator */}
           <div className="rounded-xl border border-neutral-200/60 bg-brand-50 p-3 dark:border-neutral-800/60 dark:bg-neutral-900/70">
@@ -257,7 +257,7 @@ export function Vault() {
               </button>
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">Pan:</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">Panjang:</span>
               <span className="tabular-nums text-xs font-bold text-neutral-700 dark:text-neutral-300">{genLen}</span>
               <input type="range" min={8} max={32} value={genLen} onChange={(e) => setGenLen(Number(e.target.value))} className="w-24 accent-brand-500" />
               {toggleChip(genUpper, setGenUpper)}
@@ -270,12 +270,12 @@ export function Vault() {
                 const pw = generatePassword({ length: genLen, upper: genUpper, numbers: genNums, symbols: genSyms });
                 setPassword(pw);
                 setGenPool(pw);
-                flash('Duse generator nih ✓');
+                flash('Password kepakai ✓');
               }}
               className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400"
             >
               <Sparkles size={13} />
-              Duse password ini
+              Pakai password ini
             </button>
           </div>
 
@@ -296,8 +296,8 @@ export function Vault() {
       {sorted.length === 0 ? (
         <EmptyState
           icon={KeyRound}
-          title={entries.length === 0 ? 'Belum ada password' : 'Gak ada result'}
-          body={entries.length === 0 ? 'Tambah password pertama lo, atu duse generator buat password sangar.' : 'Biar query kata lo gak ada result.'}
+          title={entries.length === 0 ? 'Belum ada password' : 'Nggak ada hasil'}
+          body={entries.length === 0 ? 'Tambah password pertamamu, atau pakai generator buat bikin kata sandi yang kuat.' : 'Nggak ada yang cocok dengan kata kunci kamu.'}
           cta={formOpen ? undefined : { label: 'Tambah password', onClick: openAdd }}
         />
       ) : (
@@ -320,12 +320,12 @@ export function Vault() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-neutral-900 dark:text-neutral-100">{e.title}</p>
-                    <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">{e.username || 'Gak ada username'}</p>
+                    <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">{e.username || 'Tanpa username'}</p>
                     <div className="mt-1 flex items-center gap-1.5">
                       <span className={`min-w-0 flex-1 truncate font-mono text-sm ${isOpen ? 'text-neutral-800 dark:text-neutral-200' : 'text-neutral-400'}`}>
                         {isOpen ? e.password : maskPassword(e.password)}
                       </span>
-                      <button type="button" aria-label={isOpen ? 'Sahuay' : 'Liar'} onClick={() => toggleReveal(e.id)} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800">
+                      <button type="button" aria-label={isOpen ? 'Sembunyikan' : 'Tampilkan'} onClick={() => toggleReveal(e.id)} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800">
                         {isOpen ? <EyeOff size={13} /> : <Eye size={13} />}
                       </button>
                     </div>
@@ -353,7 +353,7 @@ export function Vault() {
       )}
 
       <p className="px-2 pt-2 text-center text-[11px] text-neutral-400">
-        GlowUp Vault · Disimpan cuma di perangkat lo
+        GlowUp Vault · Disimpan hanya di perangkat kamu
       </p>
 
       {toast && (

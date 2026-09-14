@@ -69,7 +69,7 @@ export interface Strength {
   color: string;
 }
 
-const STRENGTH_LABELS = ['Lemah', 'Panta', 'Bagus', 'Sangar'];
+const STRENGTH_LABELS = ['Lemah', 'Sedang', 'Bagus', 'Kuat'];
 const STRENGTH_COLORS = [
   'bg-red-500 text-red-600 dark:text-red-400',
   'bg-amber-500 text-amber-600 dark:text-amber-400',

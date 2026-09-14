@@ -12,7 +12,7 @@ type Tool = 'menu' | 'nutrition' | 'finance' | 'projects' | 'todos' | 'selfrules
 const TOOLS: { id: Exclude<Tool, 'menu'>; name: string; desc: string; icon: typeof Target }[] = [
   { id: 'todos', name: 'To-Do', desc: 'Catatan harian & daftar tugas', icon: ClipboardList },
   { id: 'selfrules', name: 'Self Rules', desc: 'Aturan pribadi yang selalu dipegang', icon: ShieldCheck },
-  { id: 'vault', name: 'Vault', desc: 'Simpan & manage password penting', icon: KeyRound },
+  { id: 'vault', name: 'Vault', desc: 'Simpan & kelola password penting', icon: KeyRound },
   { id: 'nutrition', name: 'Nutrition', desc: 'Jadwal & prinsip makan harian', icon: Utensils },
   { id: 'finance', name: 'Keuangan', desc: 'Alokasi pendapatan otomatis', icon: Wallet },
   { id: 'projects', name: 'Projects', desc: 'Prioritas bisnis yang mau disuksesin', icon: Target },

@@ -64,6 +64,21 @@ export function Finance() {
         </p>
       </div>
 
+      {/* Simpanan note */}
+      <div className="flex items-start gap-3 rounded-xl border border-neutral-200/80 bg-white/70 px-4 py-3 dark:border-neutral-800/70 dark:bg-neutral-900/60">
+        <Wallet size={16} className="mt-0.5 shrink-0 text-neutral-400" />
+        <div className="space-y-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
+          <p>
+            <span className="font-semibold text-neutral-800 dark:text-neutral-100">Things to buy</span> dipakai khusus
+            buat beli barang yang lo butuh buat jalanin progress/track di GlowUp — bukan buat jajan gak jelas.
+          </p>
+          <p>
+            <span className="font-semibold text-neutral-800 dark:text-neutral-100">Dana Darurat</span> gak boleh dipake buat
+            apa pun, dalam situasi apa pun. Itu khusus buat kondisi darurat beneran.
+          </p>
+        </div>
+      </div>
+
       {/* Income input */}
       <form
         onSubmit={handleSubmit}
