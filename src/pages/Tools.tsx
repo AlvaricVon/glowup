@@ -92,7 +92,7 @@ export function Tools() {
         <SelfRules />
       </div>
       <div className={view === 'vault' ? '' : 'hidden'}>
-        <Vault />
+        <Vault active={view === 'vault'} />
       </div>
       <div className={view === 'invest' ? '' : 'hidden'}>
         <InvestAlerts />
