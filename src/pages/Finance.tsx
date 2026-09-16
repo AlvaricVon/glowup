@@ -77,6 +77,10 @@ export function Finance() {
             dipake kecuali urgent. Kalaupun kepake, cuma buat beli barang yang beneran dibutuhin buat jalanin
             progress di Voskhod. Selain itu, jangan disentuh.
           </p>
+          <p>
+            <span className="font-semibold text-neutral-800 dark:text-neutral-100">Dana Darurat</span> gak boleh dipake
+            dalam keadaan apa pun. Titik.
+          </p>
         </div>
       </div>
 
