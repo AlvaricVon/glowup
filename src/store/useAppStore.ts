@@ -59,6 +59,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
     const today = await ensureTodayEntry();
     const history = await db.getAllDays();
+    // Heal longest streak: recompute from history so a previously inflated
+    // value (e.g. from the freeze-counting bug) gets corrected down.
+    const realLongest = computeLongestStreak(history);
+    if (meta.longestStreak !== realLongest) {
+      meta = { ...meta, longestStreak: realLongest };
+      await db.putMeta(meta);
+    }
     set({ meta, today, history, loading: false });
   },
 
