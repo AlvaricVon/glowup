@@ -1,4 +1,4 @@
-export type AssetKey = 'emas' | 'btc' | 'eth' | 'pasaruang';
+export type AssetKey = 'btc' | 'eth';
 
 export interface AssetInfo {
   key: AssetKey;
@@ -8,10 +8,8 @@ export interface AssetInfo {
 }
 
 export const ASSETS: readonly AssetInfo[] = [
-  { key: 'emas', name: 'Emas Dana', short: 'Emas Dana', color: '#f59e0b' },
   { key: 'btc', name: 'BTC (Indodax)', short: 'BTC', color: '#f7931a' },
   { key: 'eth', name: 'ETH (Indodax)', short: 'ETH', color: '#6366f1' },
-  { key: 'pasaruang', name: 'Pasar Uang (Bibit - Syariah)', short: 'Pasar Uang', color: '#10b981' },
 ];
 
 export interface PricePoint {
@@ -20,7 +18,10 @@ export interface PricePoint {
   createdAt: string;
 }
 
-export type AssetData = Partial<Record<AssetKey, PricePoint[]>>;
+export type AssetData = Partial<Record<AssetKey, PricePoint[]>> & {
+  /** Legacy keys from before emas & pasaruang were removed — stripped on load. */
+  [legacy: string]: PricePoint[] | undefined;
+};
 
 export type SignalKind = 'beli' | 'beli-kuat' | 'wait' | 'hold' | 'nodata';
 

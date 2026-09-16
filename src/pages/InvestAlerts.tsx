@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp, Info, LineChart, Plus, Trash2 } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import {
@@ -62,6 +62,18 @@ export function InvestAlerts() {
   const [price, setPrice] = useState('');
   const [toast, setToast] = useState<string | null>(null);
 
+  // Migration: strip legacy emas & pasaruang points saved before they were removed.
+  useEffect(() => {
+    if (data && ('emas' in data || 'pasaruang' in data)) {
+      const { emas: _emas, pasaruang: _pasaruang, ...rest } = data as AssetData & {
+        emas?: unknown;
+        pasaruang?: unknown;
+      };
+      setData(rest as AssetData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const flash = (msg: string) => {
     setToast(msg);
     window.setTimeout(() => setToast(null), 1800);
@@ -113,7 +125,7 @@ export function InvestAlerts() {
           <h1 className="text-2xl font-extrabold text-neutral-900 dark:text-neutral-100">Invest Alerts</h1>
         </div>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Catat harga harian, biar tau kapan bagusnya beli Emas Dana, BTC, ETH &amp; Pasar Uang.
+          Catat harga harian, biar tau kapan bagusnya beli BTC &amp; ETH.
         </p>
       </header>
 
@@ -121,6 +133,7 @@ export function InvestAlerts() {
         <Info size={16} className="mt-0.5 shrink-0 text-brand-500" />
         <p className="text-sm leading-relaxed text-brand-800 dark:text-brand-200">
           Sinyal dihitung dari data harga yang lo update berkala. Makin sering lo catat, makin valid prediksinya.
+          Emas Dana & Pasar Uang langsung beli aja pas gajian, gak perlu tunggu sinyal.
           Ini alat bantu, bukan nasihat finansial — tetep bijak pas mutusin.
         </p>
       </div>
