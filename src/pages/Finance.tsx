@@ -69,12 +69,13 @@ export function Finance() {
         <Wallet size={16} className="mt-0.5 shrink-0 text-neutral-400" />
         <div className="space-y-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
           <p>
-            <span className="font-semibold text-neutral-800 dark:text-neutral-100">Things to buy</span> dipakai khusus
-            buat beli barang yang lo butuh buat jalanin progress/track di Voskhod — bukan buat jajan gak jelas.
+            <span className="font-semibold text-neutral-800 dark:text-neutral-100">Things to buy</span> dipakai buat
+            beli barang yang udah lo save / target yang mau lo beli — wishlist yang jelas, bukan asal checkout.
           </p>
           <p>
-            <span className="font-semibold text-neutral-800 dark:text-neutral-100">Dana Darurat</span> gak boleh dipake buat
-            apa pun, dalam situasi apa pun. Itu khusus buat kondisi darurat beneran.
+            <span className="font-semibold text-neutral-800 dark:text-neutral-100">Simpanan Bank Jago</span> gaboleh
+            dipake kecuali urgent. Kalaupun kepake, cuma buat beli barang yang beneran dibutuhin buat jalanin
+            progress di Voskhod. Selain itu, jangan disentuh.
           </p>
         </div>
       </div>
