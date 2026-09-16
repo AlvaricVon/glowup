@@ -2,7 +2,6 @@ import type { ReminderConfig } from './types';
 
 export const DEFAULT_REMINDERS: ReminderConfig[] = [
   { id: 'subuh', label: 'Subuh — sholat time', time: '04:30', enabled: true },
-  { id: 'jogging', label: 'Jogging pagi', time: '05:30', enabled: true },
   { id: 'dzuhur', label: 'Dzuhur — sholat time', time: '12:00', enabled: true },
   { id: 'ashar', label: 'Ashar — sholat time', time: '15:15', enabled: true },
   { id: 'maghrib', label: 'Maghrib — sholat time', time: '18:00', enabled: true },

@@ -14,6 +14,7 @@ import {
   formatPretty,
   greetingForHour,
   vibrate,
+  weekdayOf,
 } from '../lib/utils';
 
 export function Home() {
@@ -38,7 +39,7 @@ export function Home() {
 
   const groups = useMemo(() => {
     if (!today) return [];
-    const currentDay = new Date(today.date).getDay();
+    const currentDay = weekdayOf(today.date);
     return PERIOD_ORDER.map((p) => {
       const all = HABITS.filter((h) => h.period === p);
       const visible = all

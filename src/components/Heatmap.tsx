@@ -1,7 +1,8 @@
-import { addDays, format, parseISO, startOfWeek } from 'date-fns';
-import { id as idLocale } from 'date-fns/locale';
+import { format, startOfWeek, addDays } from 'date-fns';
 import { useMemo } from 'react';
+import { liveRate } from '../lib/streak';
 import type { DayEntry } from '../lib/types';
+import { formatShort } from '../lib/utils';
 
 interface Props {
   days: DayEntry[];
@@ -21,7 +22,7 @@ function colorFor(rate: number | null): string {
 
 export function Heatmap({ days, weeks = 12 }: Props) {
   const grid = useMemo(() => {
-    const map = new Map(days.map((d) => [d.date, d.completionRate]));
+    const map = new Map(days.map((d) => [d.date, liveRate(d)]));
     const today = new Date();
     const startMonday = startOfWeek(addDays(today, -(weeks - 1) * 7), { weekStartsOn: 1 });
     const cols: { date: string; rate: number | null; future: boolean }[][] = [];
@@ -62,7 +63,7 @@ export function Heatmap({ days, weeks = 12 }: Props) {
                   className={`h-3 w-3 rounded-sm ${colorFor(cell.future ? null : cell.rate)} ${
                     cell.future ? 'opacity-30' : ''
                   }`}
-                  title={`${format(parseISO(cell.date), 'd MMM', { locale: idLocale })}${
+                  title={`${formatShort(cell.date)}${
                     cell.rate !== null ? ` — ${Math.round(cell.rate * 100)}%` : ''
                   }`}
                 />

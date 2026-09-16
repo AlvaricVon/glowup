@@ -14,7 +14,7 @@ import { Activity, Flame, Sparkles, TrendingDown, TrendingUp } from 'lucide-reac
 import { Heatmap } from '../components/Heatmap';
 import { EmptyState } from '../components/EmptyState';
 import { HABITS_BY_ID } from '../lib/habits';
-import { computeStreak } from '../lib/streak';
+import { computeStreak, liveRate } from '../lib/streak';
 import type { DayEntry } from '../lib/types';
 import { activeHabitsForDay, formatShort } from '../lib/utils';
 import { useAppStore } from '../store/useAppStore';
@@ -35,13 +35,13 @@ export function Stats() {
     [history, meta],
   );
 
-  const completedDays = history.filter((d) => d.completionRate > 0);
+  const completedDays = history.filter((d) => liveRate(d) > 0);
 
   const sliced = useMemo(() => {
     return history.slice(-period).map((d) => ({
       date: d.date,
       label: formatShort(d.date),
-      pct: Math.round(d.completionRate * 100),
+      pct: Math.round(liveRate(d) * 100),
     }));
   }, [history, period]);
 
@@ -49,7 +49,7 @@ export function Stats() {
   const topConsistent = useMemo(() => topConsistent_(history, 1), [history]);
   const avgRate = useMemo(() => {
     if (completedDays.length === 0) return 0;
-    const sum = completedDays.reduce((acc, d) => acc + d.completionRate, 0);
+    const sum = completedDays.reduce((acc, d) => acc + liveRate(d), 0);
     return Math.round((sum / completedDays.length) * 100);
   }, [completedDays]);
 

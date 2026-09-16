@@ -1,4 +1,4 @@
-import { format, parseISO, startOfWeek, addDays } from 'date-fns';
+import { format, startOfWeek, addDays } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { HABITS } from './habits';
 import type { DayEntry, HabitDef } from './types';
@@ -9,12 +9,28 @@ export function todayKey(d: Date = new Date()): string {
   return format(d, 'yyyy-MM-dd');
 }
 
+/** Parse a YYYY-MM-DD key as a LOCAL date (avoid UTC-shift from parseISO/new Date). */
+export function parseLocalDay(date: string): Date {
+  const [y, m, day] = date.split('-').map(Number);
+  return new Date(y, m - 1, day);
+}
+
+/** Day of week 0=Sun..6=Sat for a YYYY-MM-DD key, computed in local time. */
+export function weekdayOf(date: string): number {
+  return parseLocalDay(date).getDay();
+}
+
+/** Step a YYYY-MM-DD key by N days in local time (avoids UTC-shift bugs). */
+export function stepDay(dateKey: string, delta: number): string {
+  return todayKey(addDays(parseLocalDay(dateKey), delta));
+}
+
 export function formatPretty(date: string): string {
-  return format(parseISO(date), 'EEEE, d MMMM yyyy', { locale: idLocale });
+  return format(parseLocalDay(date), 'EEEE, d MMMM yyyy', { locale: idLocale });
 }
 
 export function formatShort(date: string): string {
-  return format(parseISO(date), 'd MMM', { locale: idLocale });
+  return format(parseLocalDay(date), 'd MMM', { locale: idLocale });
 }
 
 export function greetingForHour(hour: number, name: string): string {
@@ -41,7 +57,7 @@ export function buildEmptyDay(date: string): DayEntry {
 
 /** Active habits for the day = base habits (filtered by day) + active conditionals. */
 export function activeHabitsForDay(day: DayEntry): HabitDef[] {
-  const currentDay = new Date(day.date).getDay();
+  const currentDay = weekdayOf(day.date);
   return HABITS.filter((h) => {
     if (h.days && !h.days.includes(currentDay)) return false;
     if (!h.conditional) return true;
@@ -66,7 +82,7 @@ export function calcCompletionRate(day: DayEntry): number {
 
 /** Get Monday-based week key for a date string. Used to track per-week freezes. */
 export function weekKey(date: string): string {
-  const monday = startOfWeek(parseISO(date), { weekStartsOn: 1 });
+  const monday = startOfWeek(parseLocalDay(date), { weekStartsOn: 1 });
   return format(monday, 'yyyy-MM-dd');
 }
 

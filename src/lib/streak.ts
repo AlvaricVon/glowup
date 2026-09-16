@@ -1,6 +1,12 @@
-import { addDays, parseISO } from 'date-fns';
 import type { DayEntry } from './types';
-import { STREAK_THRESHOLD, calcCompletionRate, todayKey, weekKey } from './utils';
+import {
+  STREAK_THRESHOLD,
+  activeHabitsForDay,
+  completedCount,
+  stepDay,
+  todayKey,
+  weekKey,
+} from './utils';
 
 export interface StreakResult {
   current: number;
@@ -8,6 +14,18 @@ export interface StreakResult {
   freezeUsedThisWeek: boolean;
   /** Date strings (yyyy-mm-dd) where freeze was consumed during this calculation. */
   consumedFreezeDates: string[];
+}
+
+/** Live completion rate for a day, recomputed from the CURRENT habit list
+ *  (stored `completionRate` can go stale when habits are added/removed). */
+export function liveRate(day: DayEntry): number {
+  const total = activeHabitsForDay(day).length;
+  if (total === 0) return 0;
+  return completedCount(day) / total;
+}
+
+function stepBack(dateKey: string): string {
+  return stepDay(dateKey, -1);
 }
 
 /**
@@ -28,33 +46,41 @@ export function computeStreak(
   const usedFreezeWeeks = new Set(freezeUsedDates.map((d) => weekKey(d)));
   const consumed: string[] = [];
 
+  // Don't burn a freeze for days before the user ever opened the app.
+  const earliest = days.length
+    ? [...days].sort((a, b) => a.date.localeCompare(b.date))[0].date
+    : today;
+
   let current = 0;
   let cursor = today;
   let isFirst = true;
 
   while (true) {
     const day = map.get(cursor);
-    const passed = day ? calcCompletionRate(day) >= STREAK_THRESHOLD : false;
+    const passed = day ? liveRate(day) >= STREAK_THRESHOLD : false;
 
     if (passed) {
       current += 1;
     } else if (isFirst && cursor === today) {
       // Today not yet complete — don't break or count, just look at yesterday.
+    } else if (cursor < earliest) {
+      // Before any recorded history — stop, don't consume a freeze.
+      break;
     } else {
       // Try to use a freeze for this week.
       const wk = weekKey(cursor);
       if (!usedFreezeWeeks.has(wk)) {
         usedFreezeWeeks.add(wk);
         consumed.push(cursor);
-        // streak survives but doesn't increment for this missed day
+        current += 1;
+        // streak survives and still counts (freeze = hari dianggap lolos)
       } else {
         break;
       }
     }
 
     isFirst = false;
-    const prev = addDays(parseISO(cursor), -1);
-    cursor = prev.toISOString().slice(0, 10);
+    cursor = stepBack(cursor);
 
     // Safety: don't walk forever.
     if (current > 3650) break;
@@ -75,7 +101,7 @@ export function computeLongestStreak(days: DayEntry[]): number {
   let run = 0;
   let prev: string | null = null;
   for (const d of sorted) {
-    const passed = calcCompletionRate(d) >= STREAK_THRESHOLD;
+    const passed = liveRate(d) >= STREAK_THRESHOLD;
     if (!passed) {
       run = 0;
       prev = d.date;
@@ -84,7 +110,7 @@ export function computeLongestStreak(days: DayEntry[]): number {
     if (prev === null) {
       run = 1;
     } else {
-      const expected = addDays(parseISO(prev), 1).toISOString().slice(0, 10);
+      const expected = stepDay(prev, 1);
       run = d.date === expected ? run + 1 : 1;
     }
     longest = Math.max(longest, run);
