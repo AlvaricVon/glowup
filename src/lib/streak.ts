@@ -72,8 +72,7 @@ export function computeStreak(
       if (!usedFreezeWeeks.has(wk)) {
         usedFreezeWeeks.add(wk);
         consumed.push(cursor);
-        current += 1;
-        // streak survives and still counts (freeze = hari dianggap lolos)
+        // Freeze cuma nyambungin streak, TIDAK nambah hari.
       } else {
         break;
       }
