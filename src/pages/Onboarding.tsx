@@ -105,7 +105,7 @@ export function Onboarding() {
                 <li className="flex gap-3">
                   <Flame className="mt-0.5 shrink-0 text-brand-500" size={18} />
                   <span>
-                    Selesain min 80% habit harian buat ngejaga streak. Ada freeze 1x/minggu kalo bolong.
+                    Selesain min 80% habit harian buat ngejaga streak. Bolong sehari = streak reset ke 0.
                   </span>
                 </li>
                 <li className="flex gap-3">

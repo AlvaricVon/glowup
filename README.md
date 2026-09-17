@@ -107,7 +107,7 @@ netlify deploy --prod --dir=dist
 ## Catatan teknis
 
 - **Notifikasi**: di-fire pake `setInterval` selama app/SW alive. Untuk reminder paling reliable, install ke home screen dan biarin SW jalan. Background scheduling tanpa server butuh Web Push (server) atau Notification Triggers API (experimental).
-- **Streak**: lulus = ≥80% habit aktif tercentang hari itu. Freeze 1×/minggu kalo bolong (Senin reset).
+- **Streak**: lulus = ≥80% habit aktif tercentang hari itu. Bolong sehari (<80%) = streak reset ke 0. Hari ini masih in-progress jadi gak mutus streak.
 - **Conditional habits**: cuma muncul di list kalo toggle di Home aktif. Total habit dinamis (23–26 tergantung toggle).
 - **Hari baru**: auto-rollover pas tengah malam (hook `useDayRollover` recheck per menit + saat tab visible).
 - **Backup**: Settings → Export bikin file JSON. Import bisa restore full state.

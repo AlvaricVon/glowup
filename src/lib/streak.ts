@@ -5,7 +5,6 @@ import {
   completedCount,
   stepDay,
   todayKey,
-  weekKey,
 } from './utils';
 
 export interface StreakResult {
@@ -31,22 +30,22 @@ function stepBack(dateKey: string): string {
 /**
  * Calculate current streak walking back from today.
  *
- * Rules:
- * - A day "passes" if completionRate >= 80% of active habits that day.
- * - Today is allowed to be "in progress" — it doesn't break the streak unless it's already incomplete past midnight.
- * - One freeze per ISO week (Mon–Sun). If a missed day is found, consume the freeze for that day's week if available.
- * - We only care about freezes consumed within the streak walk; longer-term tracking is in AppMeta.
+ * Rules (strict, no auto-freeze):
+ * - A day "passes" if live completion rate >= 80% of active habits that day.
+ * - Today is allowed to be "in progress" — it doesn't break or add to the
+ *   streak, we just look at yesterday.
+ * - Any missed day (<80%) breaks the streak immediately → 0 (no magic freeze).
+ * - Missing entries (no DayEntry at all) for yesterday or earlier also break
+ *   the streak, except before the user ever opened the app.
  */
 export function computeStreak(
   days: DayEntry[],
-  freezeUsedDates: string[],
+  _freezeUsedDates: string[] = [],
   today: string = todayKey(),
 ): StreakResult {
   const map = new Map(days.map((d) => [d.date, d]));
-  const usedFreezeWeeks = new Set(freezeUsedDates.map((d) => weekKey(d)));
-  const consumed: string[] = [];
 
-  // Don't burn a freeze for days before the user ever opened the app.
+  // Don't break the streak for days before the user ever opened the app.
   const earliest = days.length
     ? [...days].sort((a, b) => a.date.localeCompare(b.date))[0].date
     : today;
@@ -64,18 +63,13 @@ export function computeStreak(
     } else if (isFirst && cursor === today) {
       // Today not yet complete — don't break or count, just look at yesterday.
     } else if (cursor < earliest) {
-      // Before any recorded history — stop, don't consume a freeze.
+      // Before any recorded history — stop.
       break;
     } else {
-      // Try to use a freeze for this week.
-      const wk = weekKey(cursor);
-      if (!usedFreezeWeeks.has(wk)) {
-        usedFreezeWeeks.add(wk);
-        consumed.push(cursor);
-        // Freeze cuma nyambungin streak, TIDAK nambah hari.
-      } else {
-        break;
-      }
+      // Missed day (<80% atau gak ada entry) → stop. Run yang udah
+      // kehitung (hari lulus berurutan dari kemarin ke belakang) tetap,
+      // tapi kalo yang miss itu kemarin ya current tetap 0.
+      break;
     }
 
     isFirst = false;
@@ -85,11 +79,10 @@ export function computeStreak(
     if (current > 3650) break;
   }
 
-  const thisWeek = weekKey(today);
   return {
     current,
-    freezeUsedThisWeek: freezeUsedDates.some((d) => weekKey(d) === thisWeek) || consumed.some((d) => weekKey(d) === thisWeek),
-    consumedFreezeDates: consumed,
+    freezeUsedThisWeek: false,
+    consumedFreezeDates: [],
   };
 }
 
