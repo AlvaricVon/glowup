@@ -13,15 +13,12 @@ export const ASSETS: readonly AssetInfo[] = [
 ];
 
 export interface PricePoint {
-  date: string; // YYYY-MM-DD
+  date: string;
   price: number;
   createdAt: string;
 }
 
-export type AssetData = Partial<Record<AssetKey, PricePoint[]>> & {
-  /** Legacy keys from before emas & pasaruang were removed — stripped on load. */
-  [legacy: string]: PricePoint[] | undefined;
-};
+export type AssetData = Partial<Record<AssetKey, PricePoint[]>> & { [legacy: string]: PricePoint[] | undefined };
 
 export type SignalKind = 'beli' | 'beli-kuat' | 'wait' | 'hold' | 'nodata';
 
@@ -30,9 +27,16 @@ export interface AssetSignal {
   signal: SignalKind;
   count: number;
   latest: number | null;
-  change1: number | null; // fraction change vs previous point
-  drawdown: number | null; // fraction below recent peak (0..1)
+  change1: number | null;
+  drawdown: number | null;
   peak: number | null;
+}
+
+export interface StaleInfo {
+  daysSinceUpdate: number | null;
+  daysSinceBuy: number | null;
+  showStaleWarning: boolean;
+  showDcaNudge: boolean;
 }
 
 export const SIGNAL_FALLBACK: Readonly<Record<SignalKind, { label: string; hint: string }>> = {
@@ -48,46 +52,73 @@ function fraction(a: number, b: number): number {
   return (a - b) / b;
 }
 
-/** Heuristic buy signal based on a drop from the recent peak and momentum. */
+function parseDay(s: string): Date {
+  const parts = s.split('-').map(Number);
+  return new Date(parts[0], parts[1]-1, parts[2]);
+}
+
+function localKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+dd;
+}
+
+function diffDays(from: string, to: string): number {
+  const a = parseDay(from);
+  const b = parseDay(to);
+  return Math.round((b.getTime()-a.getTime())/86400000);
+}
+
+function drawdownOf(prices: number[]): number {
+  if (prices.length < 2) return 0;
+  const peak = Math.max.apply(null, prices);
+  const last = prices[prices.length-1];
+  return peak > 0 ? (peak-last)/peak : 0;
+}
+
 export function computeSignal(key: AssetKey, points: PricePoint[]): AssetSignal {
   if (!points || points.length < 2) {
-    return {
-      key,
-      signal: 'nodata',
-      count: points?.length ?? 0,
-      latest: points?.length ? points[points.length - 1].price : null,
-      change1: null,
-      drawdown: null,
-      peak: null,
-    };
+    return { key, signal: 'nodata', count: points ? points.length : 0, latest: points && points.length ? points[points.length-1].price : null, change1: null, drawdown: null, peak: null };
   }
-
-  const sorted = [...points].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = points.slice().sort((a,b)=>a.date.localeCompare(b.date));
   const window = sorted.slice(-30);
-  const latest = window[window.length - 1].price;
-  const prev = window[window.length - 2].price;
-  const peak = Math.max(...window.map((p) => p.price));
-  const drawdown = peak > 0 ? (peak - latest) / peak : 0;
+  const latest = window[window.length-1].price;
+  const prev = window[window.length-2].price;
+  const peak = Math.max.apply(null, window.map(p=>p.price));
+  const drawdown = peak > 0 ? (peak-latest)/peak : 0;
   const change1 = fraction(latest, prev);
-
-  // Medium trend: avg of second half compared to first half of window.
-  const mid = Math.floor(window.length / 2);
-  const firstHalf = window.slice(0, mid).reduce((s, p) => s + p.price, 0) / mid;
-  const secondHalf = window.slice(mid).reduce((s, p) => s + p.price, 0) / Math.max(1, window.length - mid);
+  const mid = Math.floor(window.length/2);
+  const firstHalf = window.slice(0,mid).reduce((s,p)=>s+p.price,0)/mid;
+  const secondHalf = window.slice(mid).reduce((s,p)=>s+p.price,0)/Math.max(1,window.length-mid);
   const trend = fraction(secondHalf, firstHalf);
-
   let signal: SignalKind;
-  if (drawdown >= 0.1) {
-    signal = 'beli-kuat';
-  } else if (drawdown >= 0.05) {
-    signal = 'beli';
-  } else if (trend > 0.02 || change1 > 0.005) {
-    signal = 'wait';
-  } else {
-    signal = 'hold';
-  }
-
+  if (drawdown >= 0.1) signal = 'beli-kuat';
+  else if (drawdown >= 0.05) signal = 'beli';
+  else if (trend > 0.02 || change1 > 0.005) signal = 'wait';
+  else signal = 'hold';
   return { key, signal, count: window.length, latest, change1, drawdown, peak };
+}
+
+export function getStaleInfo(points: PricePoint[], signal: SignalKind): StaleInfo {
+  if (!points || points.length < 2) return { daysSinceUpdate: null, daysSinceBuy: null, showStaleWarning: false, showDcaNudge: false };
+  const sorted = points.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const today = localKey(new Date());
+  const lastDate = sorted[sorted.length-1].date;
+  const daysSinceUpdate = Math.max(0, diffDays(lastDate, today));
+  const isBuy = signal === 'beli' || signal === 'beli-kuat';
+  if (isBuy) return { daysSinceUpdate, daysSinceBuy: 0, showStaleWarning: daysSinceUpdate > 7, showDcaNudge: false };
+  let lastBuyDate: string | null = null;
+  for (let i = 0; i < sorted.length; i++) {
+    const slice = sorted.slice(0, i+1);
+    if (slice.length < 2) continue;
+    if (drawdownOf(slice.map(p=>p.price)) >= 0.05) lastBuyDate = sorted[i].date;
+  }
+  const daysSinceBuy = lastBuyDate === null ? null : Math.max(0, diffDays(lastBuyDate, today));
+  const effective = lastBuyDate === null ? 999 : daysSinceBuy as number;
+  const showStaleWarning = daysSinceUpdate > 7;
+  const showDcaNudge = !showStaleWarning && (signal === 'hold' || signal === 'wait') && effective >= 30;
+  return { daysSinceUpdate, daysSinceBuy, showStaleWarning, showDcaNudge };
 }
 
 export function formatPrice(value: number): string {
@@ -95,7 +126,6 @@ export function formatPrice(value: number): string {
 }
 
 export function pct(value: number | null, plusSign = true): string {
-  if (value === null || value === undefined) return '—';
-  const s = `${value * 100 >= 0 && plusSign ? '+' : ''}${(value * 100).toFixed(1)}%`;
-  return s;
+  if (value === null || value === undefined) return '-';
+  return (value*100 >= 0 && plusSign ? '+' : '') + (value*100).toFixed(1) + '%';
 }

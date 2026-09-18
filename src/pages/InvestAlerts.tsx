@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ArrowDown, ArrowUp, Info, LineChart, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, CalendarClock, Hourglass, Info, LineChart, Plus, Trash2 } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import {
   ASSETS,
   computeSignal,
+  getStaleInfo,
   formatPrice,
   pct,
   SIGNAL_FALLBACK,
@@ -143,6 +144,7 @@ export function InvestAlerts() {
           const rawPoints = data[a.key] ?? [];
           const points = sortedPoints(rawPoints);
           const sig = computeSignal(a.key, rawPoints);
+          const stale = getStaleInfo(rawPoints, sig.signal);
           const meta = SIGNAL_FALLBACK[sig.signal];
           const isEditing = activeInput === a.key;
           const up = sig.change1 !== null && sig.change1 > 0;
@@ -183,7 +185,29 @@ export function InvestAlerts() {
                 </div>
               </div>
 
-              <p className="px-4 pb-3 pt-1 text-[11px] text-neutral-500 dark:text-neutral-400">{meta.hint}</p>
+              <p className="px-4 pb-2 pt-1 text-[11px] text-neutral-500 dark:text-neutral-400">{meta.hint}</p>
+
+              {stale.showStaleWarning && stale.daysSinceUpdate !== null && (
+                <div className="mx-4 mb-2 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/40 dark:bg-amber-950/30">
+                  <Hourglass size={14} className="mt-0.5 shrink-0 text-amber-500" />
+                  <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-200">
+                    Data {stale.daysSinceUpdate} hari lalu — update dulu biar sinyal valid, jangan ambil keputusan dari data basi.
+                  </p>
+                </div>
+              )}
+
+              {stale.showDcaNudge && (
+                <div className="mx-4 mb-2 flex items-start gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3 py-2 dark:border-brand-900/30 dark:bg-brand-900/20">
+                  <CalendarClock size={14} className="mt-0.5 shrink-0 text-brand-500" />
+                  <p className="text-[11px] leading-relaxed text-brand-800 dark:text-brand-200">
+                    Udah {stale.daysSinceBuy === null ? 'lebih dari 30' : stale.daysSinceBuy} hari gak ada diskon 5%+. Kalau nunggu terus takut ketinggalan, cicil kecil (DCA) aja — yang gede tetap tunggu sinyal BELI nongol.
+                  </p>
+                </div>
+              )}
+
+              {stale.daysSinceBuy !== null && stale.daysSinceBuy > 0 && !stale.showDcaNudge && !stale.showStaleWarning && (
+                <p className="px-4 pb-2 text-[11px] text-neutral-400">Terakhir ada sinyal BELI: {stale.daysSinceBuy} hari lalu</p>
+              )}
 
               <div className="px-4 pb-3">
                 {isEditing ? (
