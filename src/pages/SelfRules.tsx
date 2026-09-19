@@ -34,6 +34,11 @@ const RULES: Rule[] = [
     title: 'Baju sobek dijahit',
     description: 'Pas mau mandi, kalau baju yang mau dipakai sobek atau koyak, jait dulu. Kalau nggak sobek, nggak usah.',
   },
+  {
+    title: 'Laptop selalu dibersihin',
+    description:
+      'Tiap buka dan tutup laptop wajib dilap dan dibersihin dulu. Gak ada laptop kotor, mulai dan selesai pakai selalu bersih.',
+  },
 ];
 
 export function SelfRules() {
