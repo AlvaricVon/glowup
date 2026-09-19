@@ -1,20 +1,18 @@
 import { useState } from 'react';
-import { ArrowLeft, ChevronRight, ClipboardList, KeyRound, LayoutGrid, LineChart, ShieldCheck, Target, Utensils, Wallet } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ClipboardList, KeyRound, LayoutGrid, ShieldCheck, Target, Utensils, Wallet } from 'lucide-react';
 import { Finance } from './Finance';
-import { InvestAlerts } from './InvestAlerts';
 import { Nutrition } from './Nutrition';
 import { Projects } from './Projects';
 import { SelfRules } from './SelfRules';
 import { Todos } from './Todos';
 import { Vault } from './Vault';
 
-type Tool = 'menu' | 'nutrition' | 'finance' | 'projects' | 'todos' | 'selfrules' | 'vault' | 'invest';
+type Tool = 'menu' | 'nutrition' | 'finance' | 'projects' | 'todos' | 'selfrules' | 'vault';
 
 const TOOLS: { id: Exclude<Tool, 'menu'>; name: string; desc: string; icon: typeof Target }[] = [
   { id: 'todos', name: 'To-Do', desc: 'Catatan harian & daftar tugas', icon: ClipboardList },
   { id: 'selfrules', name: 'Self Rules', desc: 'Aturan pribadi yang selalu dipegang', icon: ShieldCheck },
   { id: 'vault', name: 'Vault', desc: 'Simpan & kelola password penting', icon: KeyRound },
-  { id: 'invest', name: 'Invest Alerts', desc: 'Prediksi kapan bagus beli investasi', icon: LineChart },
   { id: 'nutrition', name: 'Nutrition', desc: 'Jadwal & prinsip makan harian', icon: Utensils },
   { id: 'finance', name: 'Keuangan', desc: 'Alokasi pendapatan otomatis', icon: Wallet },
   { id: 'projects', name: 'Projects', desc: 'Prioritas bisnis yang mau disuksesin', icon: Target },
@@ -93,9 +91,6 @@ export function Tools() {
       </div>
       <div className={view === 'vault' ? '' : 'hidden'}>
         <Vault active={view === 'vault'} />
-      </div>
-      <div className={view === 'invest' ? '' : 'hidden'}>
-        <InvestAlerts />
       </div>
     </>
   );

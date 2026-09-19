@@ -39,6 +39,10 @@ const RULES: Rule[] = [
     description:
       'Tiap buka dan tutup laptop wajib dilap dan dibersihin dulu. Gak ada laptop kotor, mulai dan selesai pakai selalu bersih.',
   },
+  {
+    title: 'Gabut = pantengin market',
+    description: 'Tiap gabut, pantengin aja market. Jangan ngabisin waktu buat hal yang gak jelas.',
+  },
 ];
 
 export function SelfRules() {
