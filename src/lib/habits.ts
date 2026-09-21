@@ -14,7 +14,14 @@ export const HABITS: HabitDef[] = [
   { id: 'puasa-senin-kamis', label: 'Puasa Senin Kamis', period: 'pagi', priority: 7, days: [1, 4] },
   { id: 'mandi-pagi', label: 'Mandi pagi', description: 'Setelah olahraga pagi', period: 'pagi', priority: 8 },
   { id: 'baca-buku', label: 'Baca buku min 10 halaman', description: 'Setelah mandi pagi', period: 'pagi', priority: 8.5 },
-  { id: 'push-mmr-ml', label: 'Push MMR hero ML', description: 'Tiap main wajib sambil live. Sampe kalah 3x, kalo udah waktu tidur ya tidur', period: 'pagi', priority: 9 },
+  {
+    id: 'push-mmr-ml',
+    label: 'Push rank ML',
+    description:
+      'Tiap main wajib sambil live, push pake hero siksa, dan have fun aja. Sampe kalah 3x, kalo udah waktu tidur ya tidur',
+    period: 'pagi',
+    priority: 9,
+  },
 
   // Siang
   { id: 'dzuhur-masjid', label: 'Sholat dzuhur', period: 'siang', priority: 8 },

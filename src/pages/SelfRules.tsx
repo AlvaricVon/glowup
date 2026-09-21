@@ -8,15 +8,31 @@ type Rule = {
 const RULES: Rule[] = [
   {
     title: 'Postur bagus',
-    description: 'Selalu pasang postur yang baik: bahu lurus, duduk tegap. Jaga setiap saat.',
+    description:
+      'Selalu pasang postur yang bagus: bahu lurus dan duduk tegap, jaga setiap saat. Kalo duduk usahain selalu senderan biar punggung gak bungkuk.',
+  },
+  {
+    title: 'Selalu tenang',
+    description: 'Hindari emosi berlebihan, tetep kalem di kondisi apa pun.',
+  },
+  {
+    title: 'Earbuds/headphone nyala terus',
+    description:
+      'Tiap ngapa-ngapain selalu pakai earbuds atau headphone biar lebih tenang, sambil dengerin musik. Kecuali kalo situasinya emang gak bisa pakai.',
   },
   {
     title: 'Talk less, do more',
     description: 'Kurangi omongan, perbanyak action. Biar hasil yang bicara.',
   },
   {
-    title: 'Selalu tenang',
-    description: 'Hindari emosi berlebihan, tetap kalem di kondisi apa pun.',
+    title: 'Baca Quran harus tartil',
+    description:
+      'Baca Quran jangan asal lantun: perhatiin panjang pendek, harokat, makhraj, dan tajwidnya. Intinya tartil, bener dan gak buru-buru.',
+  },
+  {
+    title: 'Baca buku kaya lagi ngalamin',
+    description:
+      'Baca buku kaya lagi ngalamin sendiri apa yang ada di dalamnya: rasain, bayangin, dan masuk ke dalem ceritanya — bukan cuma baca teksnya doang.',
   },
   {
     title: 'Bulu dicukur',
@@ -32,12 +48,27 @@ const RULES: Rule[] = [
   },
   {
     title: 'Baju sobek dijahit',
-    description: 'Pas mau mandi, kalau baju yang mau dipakai sobek atau koyak, jait dulu. Kalau nggak sobek, nggak usah.',
+    description:
+      'Sebelum mandi, cek dulu baju yang mau dipakai. Kalau sobek atau koyak, jahit dulu. Kalau gak sobek, lanjut aja.',
   },
   {
     title: 'Laptop selalu dibersihin',
     description:
-      'Tiap buka dan tutup laptop wajib dilap dan dibersihin dulu. Gak ada laptop kotor, mulai dan selesai pakai selalu bersih.',
+      'Tiap buka dan tutup laptop wajib dilap dan dibersihin dulu. Gak ada laptop kotor — mulai dan selesai pakai harus selalu bersih.',
+  },
+  {
+    title: 'Barang abis dipake balik ke tempatnya',
+    description:
+      'Tiap abis selesai pakai barang, langsung balikin ke tempatnya masing-masing. Jangan numpuk di meja atau dibiarin di lantai.',
+  },
+  {
+    title: 'Panasin motor & genset tiap pagi',
+    description: 'Tiap pagi panasin dulu motor dan genset kalo ada, biar mesinnya sehat dan siap dipakai.',
+  },
+  {
+    title: 'Jalan kaki kalo bisa',
+    description:
+      'Ke mana-mana usahain jalan kaki dulu. Cek jaraknya di Google Maps: kalau masih 1 jam atau kurang, jalan kaki. Kalau udah lebih dari 1 jam, naik sepeda.',
   },
   {
     title: 'Gabut = pantengin market',
