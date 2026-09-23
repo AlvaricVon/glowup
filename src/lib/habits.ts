@@ -50,6 +50,13 @@ export const HABITS: HabitDef[] = [
     period: 'limit',
     priority: 19.5,
   },
+  {
+    id: 'upload-clipping-3-sosmed',
+    label: 'Upload konten clipping',
+    description: 'Upload ke 3 sosmed langsung: YouTube, IG, TikTok — kalo udah, submit ke whoap jg',
+    period: 'limit',
+    priority: 19.7,
+  },
   { id: 'no-overeat', label: 'Makan secukupnya', description: 'Gak overeat', period: 'limit', priority: 30 },
   { id: 'no-porn', label: 'No porn', description: 'Seharian gak nonton/liat', period: 'limit', priority: 31 },
   { id: 'no-scroll', label: 'No scrolling sosmed', description: 'Buka utk keperluan spesifik OK', period: 'limit', priority: 32 },

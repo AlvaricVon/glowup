@@ -4,6 +4,7 @@ export interface Quote {
 }
 
 export const QUOTES: Quote[] = [
+  { text: 'Jangan hanya duduk-duduk. Lakukan sesuatu. Jawaban akan muncul' },
   { text: 'Sesungguhnya Allah tidak akan mengubah keadaan suatu kaum sehingga mereka mengubah keadaan yang ada pada diri mereka sendiri.', source: 'QS. Ar-Ra\'d: 11' },
   { text: 'Hanya kepada Allah-lah kembalinya semua urusan.', source: 'QS. Al-Hadid: 5' },
   { text: 'Maka apabila kamu telah selesai (dari sesuatu urusan), kerjakanlah dengan sungguh-sungguh urusan yang lain.', source: 'QS. Al-Insyirah: 7' },
@@ -31,6 +32,11 @@ export const QUOTES: Quote[] = [
   { text: 'Lo gak butuh suasana sempurna buat mulai. Lo butuh mulai aja dulu.' },
   { text: 'Tidur cepat hari ini = produktif besok. Itu deal yang gak boleh ditolak.' },
 ];
+
+/** Static intro quote — shown as a popup/intro when the app opens. */
+export const INTRO_QUOTE: Quote = {
+  text: 'Jangan hanya duduk-duduk. Lakukan sesuatu. Jawaban akan muncul',
+};
 
 /** Pick a deterministic quote for the given date so it stays the same all day. */
 export function quoteForDate(date: string): Quote {
