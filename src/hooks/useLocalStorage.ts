@@ -2,11 +2,17 @@ import { useEffect, useState } from 'react';
 
 type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
 
-export function useLocalStorage<T>(key: string, initialValue: T): [T, Setter<T>] {
+export function useLocalStorage<T>(
+  key: string,
+  initialValue: T,
+  sanitize?: (raw: unknown) => T,
+): [T, Setter<T>] {
   const [value, setValue] = useState<T>(() => {
     try {
       const item = window.localStorage.getItem(key);
-      return item ? (JSON.parse(item) as T) : initialValue;
+      if (!item) return initialValue;
+      const parsed = JSON.parse(item) as unknown;
+      return sanitize ? sanitize(parsed) : (parsed as T);
     } catch {
       return initialValue;
     }

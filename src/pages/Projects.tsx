@@ -10,7 +10,11 @@ import {
 const STORAGE_KEY = 'glowup-projects';
 
 export function Projects() {
-  const [state, setState] = useLocalStorage<ProjectsState>(STORAGE_KEY, mergeProjectsState(undefined));
+  const [state, setState] = useLocalStorage<ProjectsState>(
+    STORAGE_KEY,
+    mergeProjectsState(undefined),
+    mergeProjectsState,
+  );
 
   const byId = new Map(PROJECTS.map((p) => [p.id, p]));
   const items: Project[] = state.order.map((id) => byId.get(id)).filter((p): p is Project => Boolean(p));
