@@ -37,6 +37,7 @@ export const PROJECTS: readonly Project[] = [
   { id: 'hp-rusak', name: 'Bisnis HP Rusak' },
   { id: 'jasa-design', name: 'Jasa Design' },
   { id: 'lay', name: 'Lay' },
+  { id: 'listinglift', name: 'ListingLift' },
 ];
 
 export const DEFAULT_ORDER: readonly string[] = PROJECTS.map((p) => p.id);
