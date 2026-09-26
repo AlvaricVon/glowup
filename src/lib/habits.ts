@@ -57,7 +57,14 @@ export const HABITS: HabitDef[] = [
     period: 'limit',
     priority: 19.7,
   },
-  { id: 'no-overeat', label: 'Makan secukupnya', description: 'Gak overeat', period: 'limit', priority: 30 },
+  {
+    id: 'no-overeat',
+    label: 'Makan secukupnya',
+    description:
+      'Kunyah makanan 32x dulu sebelum ditelan, porsi secukupnya & gak overeat. Kalo makan nasi maksimal 2 centong aja',
+    period: 'limit',
+    priority: 30,
+  },
   { id: 'no-porn', label: 'No porn', description: 'Seharian gak nonton/liat', period: 'limit', priority: 31 },
   { id: 'no-scroll', label: 'No scrolling sosmed', description: 'Buka utk keperluan spesifik OK', period: 'limit', priority: 32 },
 ];

@@ -35,7 +35,8 @@ const PRINCIPLES: Principle[] = [
   },
   {
     title: 'Sayur banyak, karbo dari ubi/oat/kentang',
-    description: 'Bukan nasi, tapi bukan berarti dibatasi ketat.',
+    description:
+      'Karbo utama dari ubi/oat/kentang, bukan nasi. Tapi gak dilarang total — kalo emang makan nasi, maksimal 2 centong aja.',
   },
   {
     title: 'Kurangi gorengan, minuman manis, mie instan/makanan tinggi garam',
@@ -43,7 +44,8 @@ const PRINCIPLES: Principle[] = [
   },
   {
     title: 'Makan sampai kenyang wajar di tiap sesi',
-    description: 'Jangan sengaja nahan lapar atau skip makan buat "ngebut" hasil. Badan lu masih butuh cukup asupan buat tumbuh.',
+    description:
+      'Jangan sengaja nahan lapar atau skip makan buat "ngebut" hasil. Badan lu masih butuh cukup asupan buat tumbuh. Kunyah 32x dulu sebelum ditelan biar kenyangnya kerasa dan gak kalap.',
   },
   {
     title: 'Hasil "lean & kebentuk"',

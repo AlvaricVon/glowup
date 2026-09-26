@@ -43,6 +43,11 @@ const RULES: Rule[] = [
     description: 'Cabut rutin biar tetap wangi dan rapi.',
   },
   {
+    title: 'Buka baju kalo lagi sendirian',
+    description:
+      'Kalo lagi sendirian, lagi di rumah, atau lagi di kamar: buka baju aja — telanjang dada, tetep pake celana. Biar badan kelihatan terus, jadi lebih gampang nge-manifest bentuk badan yang lagi dibentuk.',
+  },
+  {
     title: 'Minum air putih',
     description: 'Selalu minum air putih sebelum dan sesudah makan apa pun.',
   },
