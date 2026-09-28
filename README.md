@@ -108,7 +108,8 @@ netlify deploy --prod --dir=dist
 
 - **Notifikasi**: di-fire pake `setInterval` selama app/SW alive. Untuk reminder paling reliable, install ke home screen dan biarin SW jalan. Background scheduling tanpa server butuh Web Push (server) atau Notification Triggers API (experimental).
 - **Streak**: lulus = ≥80% habit aktif tercentang hari itu. Bolong sehari (<80%) = streak reset ke 0. Hari ini masih in-progress jadi gak mutus streak.
-- **Conditional habits**: cuma muncul di list kalo toggle di Home aktif. Total habit dinamis (23–26 tergantung toggle).
+- **Conditional habits**: cuma muncul di list kalo toggle di Home aktif. Total habit dinamis (24–27 tergantung hari: Senin/Kamis ada puasa, hari lainnya ada workout + minum ekstra).
+- **Upload konten**: habit di *Target Harian* buat ngecek upload konten harian (OddlyLab · ML · TikTok & Shorts) + upload konten YouTube (Shorts & video panjang, langsung publish).
 - **Upload clipping**: habit di *Target Harian* buat ngecek upload konten clipping ke 3 sosmed langsung (YouTube, IG, TikTok) + submit ke WA kalo udah.
 - **Intro quote**: tiap app dibuka, muncul popup quote statis ("Jangan hanya duduk-duduk. Lakukan sesuatu. Jawaban akan muncul") — auto-dismiss 5 detik atau tap buat lanjut. Quotes harian di Home tetap rotasi dari `src/lib/quotes.ts`.
 - **Hari baru**: auto-rollover pas tengah malam (hook `useDayRollover` recheck per menit + saat tab visible).

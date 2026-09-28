@@ -46,9 +46,16 @@ export const HABITS: HabitDef[] = [
   {
     id: 'upload-konten',
     label: 'Upload konten',
-    description: 'OddlyLab · ML · TikTok',
+    description: 'OddlyLab · ML · TikTok & Shorts',
     period: 'limit',
     priority: 19.5,
+  },
+  {
+    id: 'upload-konten-yt',
+    label: 'Upload konten YT',
+    description: 'Upload ke YouTube (Shorts & video panjang), langsung publish',
+    period: 'limit',
+    priority: 19.6,
   },
   {
     id: 'upload-clipping-3-sosmed',
