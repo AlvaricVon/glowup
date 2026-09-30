@@ -40,7 +40,14 @@ export const HABITS: HabitDef[] = [
   { id: 'minum-isya', label: 'Minum 2 gelas', description: 'Setelah sholat isya', period: 'malam', priority: 25.5 },
   { id: 'selesai-semua', label: 'Selesaikan semua kewajiban & masalah', description: 'WA to-do list & masalah hari ini beres', period: 'malam', priority: 27 },
   { id: 'grooming-malam', label: 'Sikat gigi & Cuci Muka', description: 'Sebelum tidur', period: 'malam', priority: 28 },
-  { id: 'tidur-10', label: 'Tidur sebelum jam 10', description: 'Jam 22.00 udah mati lampu dan udah posisi rebahan siap tidur. Boleh sambil nonton movie biar ngantuk, yang penting gak scroll HP.', period: 'malam', priority: 29 },
+  {
+    id: 'tidur-10',
+    label: 'Tidur sebelum jam 10',
+    description:
+      'Jam 21.00 (jam 9): lampu udah mati dan udah posisi rebahan siap tidur. Jam 21.00–22.00: sesi refreshing — baca komik, nonton anime, atau nonton donghua (bukan scroll HP). Jam 22.00 (jam 10): taruh HP, langsung tidur.',
+    period: 'malam',
+    priority: 29,
+  },
 
   // Limit
   {

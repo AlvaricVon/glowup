@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import * as db from '../lib/db';
-import { DEFAULT_REMINDERS } from '../lib/notifications';
+import { DEFAULT_REMINDERS, syncDefaultReminders } from '../lib/notifications';
 import { computeLongestStreak } from '../lib/streak';
 import type { AppMeta, ConditionalKey, DayEntry } from '../lib/types';
 import { buildEmptyDay, calcCompletionRate, todayKey } from '../lib/utils';
@@ -62,8 +62,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     // Heal longest streak: recompute from history so a previously inflated
     // value (e.g. from the freeze-counting bug) gets corrected down.
     const realLongest = computeLongestStreak(history);
-    if (meta.longestStreak !== realLongest) {
-      meta = { ...meta, longestStreak: realLongest };
+    const streakChanged = meta.longestStreak !== realLongest;
+    // Sync reminder defaults so install lama dapet reminder baru (mis. jam 9 mati
+    // lampu) tanpa nimpa reminder yang udah dikustom manual.
+    const reminders = syncDefaultReminders(meta.reminders);
+    const remindersChanged = JSON.stringify(reminders) !== JSON.stringify(meta.reminders ?? []);
+    if (streakChanged || remindersChanged) {
+      meta = { ...meta, longestStreak: realLongest, reminders };
       await db.putMeta(meta);
     }
     set({ meta, today, history, loading: false });

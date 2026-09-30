@@ -6,8 +6,59 @@ export const DEFAULT_REMINDERS: ReminderConfig[] = [
   { id: 'ashar', label: 'Ashar — sholat time', time: '15:15', enabled: true },
   { id: 'maghrib', label: 'Maghrib — sholat time', time: '18:00', enabled: true },
   { id: 'isya', label: 'Isya — sholat time', time: '19:15', enabled: true },
-  { id: 'tidur', label: 'Tidur — sebelum jam 10', time: '21:30', enabled: true },
+  {
+    id: 'tidur-mati-lampu',
+    label: 'Jam 9 — mati lampu & posisi tidur, mulai sesi refreshing (komik/anime/donghua)',
+    time: '21:00',
+    enabled: true,
+  },
+  {
+    id: 'tidur',
+    label: '10 menit lagi jam 10 — taruh HP, langsung tidur',
+    time: '21:50',
+    enabled: true,
+  },
 ];
+
+/** Default versi lama, dipake buat deteksi reminder yang belum pernah dikustom user. */
+const LEGACY_REMINDER_DEFAULTS: Record<string, { time: string; label: string }> = {
+  tidur: { time: '21:30', label: 'Tidur — sebelum jam 10' },
+};
+
+/**
+ * Sinkronin daftar reminder yang kesimpen di meta sama DEFAULT_REMINDERS:
+ * - reminder baru (mis. 'tidur-mati-lampu') otomatis ditambahin,
+ * - reminder lama yang masih pake time/label default versi sebelumnya di-update
+ *   ke default baru, tapi yang udah dikustom manual gak kesentuh.
+ */
+export function syncDefaultReminders(reminders: ReminderConfig[] | undefined): ReminderConfig[] {
+  const current = reminders ?? [];
+  const byId = new Map(current.map((r) => [r.id, { ...r }]));
+
+  for (const def of DEFAULT_REMINDERS) {
+    const existing = byId.get(def.id);
+    if (!existing) {
+      byId.set(def.id, { ...def });
+      continue;
+    }
+    const legacy = LEGACY_REMINDER_DEFAULTS[def.id];
+    const untouchedByUser = legacy
+      ? existing.time === legacy.time && existing.label === legacy.label
+      : existing.time === def.time && existing.label === def.label;
+    if (untouchedByUser) byId.set(def.id, { ...existing, time: def.time, label: def.label });
+  }
+
+  // Urutan ikut DEFAULT_REMINDERS, reminder custom (hasil import) ditaruh di belakang.
+  const ordered: ReminderConfig[] = [];
+  for (const def of DEFAULT_REMINDERS) {
+    const r = byId.get(def.id);
+    if (r) ordered.push(r);
+  }
+  for (const r of current) {
+    if (!DEFAULT_REMINDERS.some((d) => d.id === r.id)) ordered.push(r);
+  }
+  return ordered;
+}
 
 export async function ensurePermission(): Promise<NotificationPermission> {
   if (!('Notification' in window)) return 'denied';
