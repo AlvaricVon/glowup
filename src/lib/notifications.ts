@@ -8,7 +8,8 @@ export const DEFAULT_REMINDERS: ReminderConfig[] = [
   { id: 'isya', label: 'Isya — sholat time', time: '19:15', enabled: true },
   {
     id: 'tidur-mati-lampu',
-    label: 'Jam 9 — mati lampu & posisi tidur, mulai sesi refreshing (komik/anime/donghua)',
+    label:
+      'Jam 9 — mati lampu & posisi tidur. Sesi refreshing cuma boleh: fighting/gore/darah, top tier, atau dari watchlist/readlist',
     time: '21:00',
     enabled: true,
   },
@@ -20,9 +21,16 @@ export const DEFAULT_REMINDERS: ReminderConfig[] = [
   },
 ];
 
-/** Default versi lama, dipake buat deteksi reminder yang belum pernah dikustom user. */
-const LEGACY_REMINDER_DEFAULTS: Record<string, { time: string; label: string }> = {
-  tidur: { time: '21:30', label: 'Tidur — sebelum jam 10' },
+/**
+ * Default versi lama, dipake buat deteksi reminder yang belum pernah dikustom user.
+ * Satu id bisa nyimpen beberapa versi lama, biar install yang ketinggalan
+ * beberapa versi tetep ke-update ke default terbaru.
+ */
+const LEGACY_REMINDER_DEFAULTS: Record<string, { time: string; label: string }[]> = {
+  tidur: [{ time: '21:30', label: 'Tidur — sebelum jam 10' }],
+  'tidur-mati-lampu': [
+    { time: '21:00', label: 'Jam 9 — mati lampu & posisi tidur, mulai sesi refreshing (komik/anime/donghua)' },
+  ],
 };
 
 /**
@@ -42,8 +50,8 @@ export function syncDefaultReminders(reminders: ReminderConfig[] | undefined): R
       continue;
     }
     const legacy = LEGACY_REMINDER_DEFAULTS[def.id];
-    const untouchedByUser = legacy
-      ? existing.time === legacy.time && existing.label === legacy.label
+    const untouchedByUser = legacy?.length
+      ? legacy.some((l) => existing.time === l.time && existing.label === l.label)
       : existing.time === def.time && existing.label === def.label;
     if (untouchedByUser) byId.set(def.id, { ...existing, time: def.time, label: def.label });
   }

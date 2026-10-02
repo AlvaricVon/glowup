@@ -44,7 +44,7 @@ export const HABITS: HabitDef[] = [
     id: 'tidur-10',
     label: 'Tidur sebelum jam 10',
     description:
-      'Jam 21.00 (jam 9): lampu udah mati dan udah posisi rebahan siap tidur. Jam 21.00–22.00: sesi refreshing — baca komik, nonton anime, atau nonton donghua (bukan scroll HP). Jam 22.00 (jam 10): taruh HP, langsung tidur.',
+      'Jam 21.00 (jam 9): lampu udah mati dan udah posisi rebahan siap tidur. Jam 21.00–22.00: sesi refreshing — baca komik, nonton anime, atau nonton donghua (bukan scroll HP), tapi filter dulu: cuma boleh yang banyak scene fighting / gore / darah, atau yang udah top tier (banyak orang bilang bagus), atau yang udah masuk watchlist/readlist lo — apalagi kalo udah di-push, lanjut aja. Jam 22.00 (jam 10): taruh HP, langsung tidur.',
     period: 'malam',
     priority: 29,
   },
