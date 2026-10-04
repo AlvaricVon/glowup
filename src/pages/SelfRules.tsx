@@ -16,9 +16,14 @@ const RULES: Rule[] = [
     description: 'Hindari emosi berlebihan, tetep kalem di kondisi apa pun.',
   },
   {
-    title: 'Earbuds/headphone nyala terus',
+    title: 'Tenang & perfect',
     description:
-      'Tiap ngapa-ngapain selalu pakai earbuds atau headphone biar lebih tenang, sambil dengerin musik. Kecuali kalo situasinya emang gak bisa pakai.',
+      'Kerjain apa pun dengan maksimal tenang dan seperfect mungkin, walaupun lagi malas atau lambat. Gak masalah pelan, yang penting hasilnya rapi dan hati tetep kalem.',
+  },
+  {
+    title: 'Musik nyala terus',
+    description:
+      'Tiap ngapa-ngapain usahain sambil dengerin musik biar lebih tenang. Gak wajib pakai earbuds/headphone — yang penting ada musiknya, jadi tetep oke kalo lagi gak bisa pakai earbuds.',
   },
   {
     title: 'Talk less, do more',
@@ -41,6 +46,21 @@ const RULES: Rule[] = [
   {
     title: 'Bulu ketek dicabut',
     description: 'Cabut rutin biar tetap wangi dan rapi.',
+  },
+  {
+    title: 'Selalu wangi, jangan bau',
+    description:
+      'Badan dan bawaan harus selalu wangi — gak boleh bau sama sekali. Jaga kebersihan terus biar wanginya awet seharian.',
+  },
+  {
+    title: 'Abis mandi wajib bersih & wangi',
+    description:
+      'Tiap abis mandi selalu bersihin telinga dan pusar, terus pakai wangian: rambut, baju, badan, dan lain-lain. Keluar rumah harus udah fresh dan wangi.',
+  },
+  {
+    title: 'Selalu pakai outfit bagus',
+    description:
+      'Ke mana pun pakai outfit yang bagus dan cocok. Jangan asal pakai — tampil rapi dan enak dilihat tiap waktu.',
   },
   {
     title: 'Buka baju kalo lagi sendirian',
@@ -67,8 +87,14 @@ const RULES: Rule[] = [
       'Tiap abis selesai pakai barang, langsung balikin ke tempatnya masing-masing. Jangan numpuk di meja atau dibiarin di lantai.',
   },
   {
-    title: 'Panasin motor & genset tiap pagi',
-    description: 'Tiap pagi panasin dulu motor dan genset kalo ada, biar mesinnya sehat dan siap dipakai.',
+    title: 'Manfaatin semua barang, jangan disia-siain',
+    description:
+      'Semua barang yang ada harus dimanfaatin — jangan dibiarin nganggur atau disia-siain. Mau diolah, dijual, dipakai, atau diapain aja, yang penting berguna dan gak mubazir.',
+  },
+  {
+    title: 'Panasin motor & genset sebelum keluar rumah',
+    description:
+      'Sebelum keluar dari rumah, panasin dulu motor dan genset kalo ada, biar mesinnya sehat dan siap dipakai.',
   },
   {
     title: 'Jalan kaki kalo bisa',

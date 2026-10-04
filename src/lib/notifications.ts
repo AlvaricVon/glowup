@@ -9,7 +9,7 @@ export const DEFAULT_REMINDERS: ReminderConfig[] = [
   {
     id: 'tidur-mati-lampu',
     label:
-      'Jam 9 — mati lampu & posisi tidur. Sesi refreshing cuma boleh: fighting/gore/darah, top tier, atau dari watchlist/readlist',
+      'Jam 9 — mati lampu & posisi tidur. Sesi refreshing cuma boleh yang udah di-save (watchlist/readlist)',
     time: '21:00',
     enabled: true,
   },
@@ -30,6 +30,11 @@ const LEGACY_REMINDER_DEFAULTS: Record<string, { time: string; label: string }[]
   tidur: [{ time: '21:30', label: 'Tidur — sebelum jam 10' }],
   'tidur-mati-lampu': [
     { time: '21:00', label: 'Jam 9 — mati lampu & posisi tidur, mulai sesi refreshing (komik/anime/donghua)' },
+    {
+      time: '21:00',
+      label:
+        'Jam 9 — mati lampu & posisi tidur. Sesi refreshing cuma boleh: fighting/gore/darah, top tier, atau dari watchlist/readlist',
+    },
   ],
 };
 

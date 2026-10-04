@@ -14,14 +14,6 @@ export const HABITS: HabitDef[] = [
   { id: 'puasa-senin-kamis', label: 'Puasa Senin Kamis', period: 'pagi', priority: 7, days: [1, 4] },
   { id: 'mandi-pagi', label: 'Mandi pagi', description: 'Setelah olahraga pagi', period: 'pagi', priority: 8 },
   { id: 'baca-buku', label: 'Baca buku min 10 halaman', description: 'Setelah mandi pagi', period: 'pagi', priority: 8.5 },
-  {
-    id: 'push-mmr-ml',
-    label: 'Push rank ML',
-    description:
-      'Tiap main wajib sambil live, push pake hero siksa, dan have fun aja. Sampe kalah 3x, kalo udah waktu tidur ya tidur',
-    period: 'pagi',
-    priority: 9,
-  },
 
   // Siang
   { id: 'dzuhur-masjid', label: 'Sholat dzuhur', period: 'siang', priority: 8 },
@@ -38,13 +30,12 @@ export const HABITS: HabitDef[] = [
   { id: 'minum-maghrib', label: 'Minum 2 gelas', description: 'Setelah sholat maghrib', period: 'malam', priority: 23.5 },
   { id: 'isya-masjid', label: 'Sholat isya', period: 'malam', priority: 25 },
   { id: 'minum-isya', label: 'Minum 2 gelas', description: 'Setelah sholat isya', period: 'malam', priority: 25.5 },
-  { id: 'selesai-semua', label: 'Selesaikan semua kewajiban & masalah', description: 'WA to-do list & masalah hari ini beres', period: 'malam', priority: 27 },
   { id: 'grooming-malam', label: 'Sikat gigi & Cuci Muka', description: 'Sebelum tidur', period: 'malam', priority: 28 },
   {
     id: 'tidur-10',
     label: 'Tidur sebelum jam 10',
     description:
-      'Jam 21.00 (jam 9): lampu udah mati dan udah posisi rebahan siap tidur. Jam 21.00–22.00: sesi refreshing — baca komik, nonton anime, atau nonton donghua (bukan scroll HP), tapi filter dulu: cuma boleh yang banyak scene fighting / gore / darah, atau yang udah top tier (banyak orang bilang bagus), atau yang udah masuk watchlist/readlist lo — apalagi kalo udah di-push, lanjut aja. Jam 22.00 (jam 10): taruh HP, langsung tidur.',
+      'Jam 21.00 (jam 9): lampu udah mati dan udah posisi rebahan siap tidur. Jam 21.00–22.00: sesi refreshing — baca komik, nonton anime, atau nonton donghua (bukan scroll HP), tapi cuma yang udah lo simpen (watchlist/readlist) aja. Jam 22.00 (jam 10): taruh HP, langsung tidur.',
     period: 'malam',
     priority: 29,
   },
@@ -58,6 +49,13 @@ export const HABITS: HabitDef[] = [
     priority: 19.5,
   },
   {
+    id: 'upload-clipping-3-sosmed',
+    label: 'Upload konten clipping',
+    description: 'Upload ke 3 sosmed langsung: YouTube, IG, TikTok — kalo udah, submit ke whoap jg',
+    period: 'limit',
+    priority: 19.55,
+  },
+  {
     id: 'upload-konten-yt',
     label: 'Upload konten YT',
     description: 'Upload ke YouTube (Shorts & video panjang), langsung publish',
@@ -65,9 +63,17 @@ export const HABITS: HabitDef[] = [
     priority: 19.6,
   },
   {
-    id: 'upload-clipping-3-sosmed',
-    label: 'Upload konten clipping',
-    description: 'Upload ke 3 sosmed langsung: YouTube, IG, TikTok — kalo udah, submit ke whoap jg',
+    id: 'selesai-semua',
+    label: 'Selesaikan semua kewajiban & masalah',
+    description: 'WA to-do list & masalah hari ini beres',
+    period: 'limit',
+    priority: 19.65,
+  },
+  {
+    id: 'push-mmr-ml',
+    label: 'Push global Gusion',
+    description:
+      'Tiap main wajib sambil live, target push global Gusion, sambil kencengin musik biar have fun. Sampe kalah 3x, kalo udah waktu tidur ya tidur',
     period: 'limit',
     priority: 19.7,
   },
