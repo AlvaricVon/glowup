@@ -1,20 +1,39 @@
+import { useRef } from 'react';
 import { Check } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
+import { useLongPress } from '../hooks/useLongPress';
 import type { HabitDef, HabitEntry } from '../lib/types';
 
 interface Props {
   def: HabitDef;
   entry: HabitEntry;
   onToggle: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onLongPress?: (e: React.PointerEvent) => void;
 }
 
-export function HabitCheckbox({ def, entry, onToggle }: Props) {
+export function HabitCheckbox({ def, entry, onToggle, onLongPress }: Props) {
   const checked = entry.completed;
+  const suppressClickRef = useRef(false);
+  const longPress = useLongPress(
+    (e) => {
+      suppressClickRef.current = true;
+      onLongPress?.(e);
+    },
+    800,
+  );
+
   return (
     <button
       type="button"
-      onClick={onToggle}
+      onClick={(e) => {
+        if (suppressClickRef.current) {
+          suppressClickRef.current = false;
+          return;
+        }
+        onToggle(e);
+      }}
+      {...(onLongPress ? longPress : {})}
       className={`group flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition-all active:scale-[0.99] ${
         checked
           ? 'border-brand-500/30 bg-brand-50/70 dark:border-brand-500/30 dark:bg-brand-500/10'

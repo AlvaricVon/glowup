@@ -8,6 +8,9 @@ interface Props {
   habits: HabitDef[];
   entries: Record<string, HabitEntry>;
   onToggle: (id: string, evt: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Habit id that opens a hidden panel when held. */
+  longPressHabitId?: string;
+  onHabitLongPress?: (id: string, evt: React.PointerEvent) => void;
 }
 
 const ICONS: Record<Period, typeof Sun> = {
@@ -20,7 +23,15 @@ const ICONS: Record<Period, typeof Sun> = {
   conditional: ToggleLeft,
 };
 
-export function HabitGroup({ period, label, habits, entries, onToggle }: Props) {
+export function HabitGroup({
+  period,
+  label,
+  habits,
+  entries,
+  onToggle,
+  longPressHabitId,
+  onHabitLongPress,
+}: Props) {
   if (habits.length === 0) return null;
   const Icon = ICONS[period];
   const done = habits.filter((h) => entries[h.id]?.completed).length;
@@ -44,6 +55,11 @@ export function HabitGroup({ period, label, habits, entries, onToggle }: Props) 
             def={h}
             entry={entries[h.id] ?? { completed: false, timestamp: null }}
             onToggle={(e) => onToggle(h.id, e)}
+            onLongPress={
+              longPressHabitId && h.id === longPressHabitId && onHabitLongPress
+                ? (e) => onHabitLongPress(h.id, e)
+                : undefined
+            }
           />
         ))}
       </div>

@@ -3,6 +3,7 @@ import { playAdhan, stopAdhan, unlockAudio } from '../lib/adhanAudio';
 import { PRAYER_NAMES, calculateDayPrayers, type PrayerKey, type PrayerTime } from '../lib/prayer';
 import { getCachedCoords } from '../lib/location';
 import { enterLockdown, exitLockdown, isNative, onNativeUnlock, showNativeLockScreen } from '../lib/lockdown';
+import { readPrayerSettings, usePrayerSettings } from '../lib/prayerSettings';
 import { useAppStore } from '../store/useAppStore';
 
 const PRAYER_HABIT: Record<PrayerKey, string> = {
@@ -59,24 +60,44 @@ export function usePrayerGate() {
   const prayersRef = useRef<PrayerTime[]>([]);
   const logRef = useRef<Record<string, string>>(readLog());
 
+  const enabled = usePrayerSettings((s) => s.enabled);
+  const method = usePrayerSettings((s) => s.method);
+  const lockEnabled = usePrayerSettings((s) => s.lockEnabled);
+  const autoCheckHabits = usePrayerSettings((s) => s.autoCheckHabits);
+
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
 
   useEffect(() => {
-    async function refresh() {
+    prayersRef.current = [];
+    if (!coords) return;
+    void (async () => {
       try {
-        if (!coords) return;
-        prayersRef.current = calculateDayPrayers({ latitude: coords.latitude, longitude: coords.longitude });
+        prayersRef.current = calculateDayPrayers({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          method: readPrayerSettings().method,
+        });
       } catch {
         // noop
       }
-    }
-    void refresh();
-    const id = setInterval(() => void refresh(), 60 * 60 * 1000);
+    })();
+    const id = setInterval(() => {
+      try {
+        if (!coords) return;
+        prayersRef.current = calculateDayPrayers({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          method: readPrayerSettings().method,
+        });
+      } catch {
+        // noop
+      }
+    }, 60 * 60 * 1000);
     return () => clearInterval(id);
-  }, [coords]);
+  }, [coords, method]);
 
   const release = useCallback(() => {
     stopAdhan();
@@ -84,7 +105,7 @@ export function usePrayerGate() {
     void exitLockdown();
   }, []);
 
-  /** Persist confirmations + auto-check the matching sholat habits. */
+  /** Persist confirmations (+ auto-check the matching sholat habits). */
   const commitConfirm = useCallback(() => {
     const log = { ...logRef.current };
     const today = dayKey(new Date());
@@ -93,15 +114,17 @@ export function usePrayerGate() {
       const key = today + '::' + pr.key;
       if (new Date() >= pr.time && !isConfirmed(log, key)) {
         log[key] = new Date().toISOString();
-        const habitId = PRAYER_HABIT[pr.key];
-        const entry = store.today?.habits?.[habitId];
-        if (!entry?.completed) void store.toggleHabit(habitId);
+        if (autoCheckHabits) {
+          const habitId = PRAYER_HABIT[pr.key];
+          const entry = store.today?.habits?.[habitId];
+          if (!entry?.completed) void store.toggleHabit(habitId);
+        }
       }
     }
     logRef.current = log;
     writeLog(log);
     release();
-  }, [release]);
+  }, [release, autoCheckHabits]);
 
   // Native unlock event (user tapped the native lock screen button).
   useEffect(() => {
@@ -109,9 +132,17 @@ export function usePrayerGate() {
   }, [commitConfirm]);
 
   const check = useCallback(() => {
+    if (!enabled) {
+      if (activeLock) release();
+      return;
+    }
     if (!coords) return;
     if (prayersRef.current.length === 0) {
-      prayersRef.current = calculateDayPrayers({ latitude: coords.latitude, longitude: coords.longitude });
+      prayersRef.current = calculateDayPrayers({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        method,
+      });
     }
     const today = dayKey(now);
     const log = logRef.current;
@@ -124,7 +155,7 @@ export function usePrayerGate() {
         setActiveLock((cur) =>
           cur && cur.prayerKey === pr.key ? cur : { prayerKey: pr.key, prayer: pr, startedAt: Date.now() },
         );
-        if (isNative()) {
+        if (isNative() && lockEnabled) {
           void enterLockdown();
           void showNativeLockScreen(PRAYER_NAMES[pr.key]);
         }
@@ -133,7 +164,7 @@ export function usePrayerGate() {
     }
 
     setActiveLock(null);
-  }, [now, coords]);
+  }, [now, coords, enabled, method, lockEnabled, activeLock, release]);
 
   useEffect(() => {
     check();

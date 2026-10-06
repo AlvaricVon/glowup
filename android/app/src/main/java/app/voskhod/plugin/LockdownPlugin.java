@@ -69,4 +69,27 @@ public class LockdownPlugin extends Plugin {
         ret.put("value", LockdownManager.from(getContext()).isDeviceOwner());
         call.resolve(ret);
     }
+
+    @PluginMethod
+    public void getWhitelist(PluginCall call) {
+        JSObject ret = new JSObject();
+        com.getcapacitor.JSArray arr = new com.getcapacitor.JSArray();
+        for (String pkg : LockdownManager.from(getContext()).getWhitelist()) arr.put(pkg);
+        ret.put("packages", arr);
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void setWhitelist(PluginCall call) {
+        com.getcapacitor.JSArray arr = call.getArray("packages");
+        if (arr == null) { call.reject("packages required"); return; }
+        try {
+            String[] pkgs = new String[arr.length()];
+            for (int i = 0; i < arr.length(); i++) pkgs[i] = arr.getString(i);
+            LockdownManager.from(getContext()).setWhitelist(pkgs);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("bad packages", e);
+        }
+    }
 }

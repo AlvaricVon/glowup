@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { ConfettiBurst } from '../components/ConfettiBurst';
 import { HabitGroup } from '../components/HabitGroup';
 import { ProgressBar } from '../components/ProgressBar';
+import { PrayerPanel } from '../components/PrayerPanel';
 import { QuoteCard } from '../components/QuoteCard';
 import { StreakCounter } from '../components/StreakCounter';
 import { HABITS, PERIOD_LABELS, PERIOD_ORDER } from '../lib/habits';
@@ -35,6 +36,7 @@ export function Home() {
   );
 
   const [confettiKey, setConfettiKey] = useState(0);
+  const [prayerPanelOpen, setPrayerPanelOpen] = useState(false);
   const [confettiOrigin, setConfettiOrigin] = useState<{ x: number; y: number } | undefined>();
 
   const groups = useMemo(() => {
@@ -101,11 +103,15 @@ export function Home() {
             habits={g.habits}
             entries={today.habits}
             onToggle={handleHabitToggle}
+            longPressHabitId="subuh-masjid"
+            onHabitLongPress={() => setPrayerPanelOpen(true)}
           />
         ))}
       </div>
 
       <QuoteCard quote={quote} />
+
+      {prayerPanelOpen && <PrayerPanel onClose={() => setPrayerPanelOpen(false)} />}
 
       <ConfettiBurst trigger={confettiKey} origin={confettiOrigin} />
     </div>
