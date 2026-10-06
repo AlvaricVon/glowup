@@ -42,6 +42,13 @@ export const HABITS: HabitDef[] = [
 
   // Limit
   {
+    id: 'selesai-semua',
+    label: 'Selesaikan semua kewajiban & masalah',
+    description: 'WA to-do list & masalah hari ini beres — sebelum upload konten',
+    period: 'limit',
+    priority: 19.45,
+  },
+  {
     id: 'upload-konten',
     label: 'Upload konten',
     description: 'OddlyLab · ML · TikTok & Shorts',
@@ -61,13 +68,6 @@ export const HABITS: HabitDef[] = [
     description: 'Upload ke YouTube (Shorts & video panjang), langsung publish',
     period: 'limit',
     priority: 19.6,
-  },
-  {
-    id: 'selesai-semua',
-    label: 'Selesaikan semua kewajiban & masalah',
-    description: 'WA to-do list & masalah hari ini beres',
-    period: 'limit',
-    priority: 19.65,
   },
   {
     id: 'push-mmr-ml',

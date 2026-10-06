@@ -30,6 +30,11 @@ const RULES: Rule[] = [
     description: 'Kurangi omongan, perbanyak action. Biar hasil yang bicara.',
   },
   {
+    title: 'Jangan pernah berbohong',
+    description:
+      'Jangan pernah bohong, gak peduli alasannya apa. Kalo emang gak bisa, gak tau, atau gak sanggup — diam aja. Diam itu lebih baik daripada bohong.',
+  },
+  {
     title: 'Baca Quran harus tartil',
     description:
       'Baca Quran jangan asal lantun: perhatiin panjang pendek, harokat, makhraj, dan tajwidnya. Intinya tartil, bener dan gak buru-buru.',
