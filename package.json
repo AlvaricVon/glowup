@@ -10,6 +10,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "adhan": "^4.4.6",
     "date-fns": "^3.6.0",
     "idb": "^8.0.0",
     "lucide-react": "^0.460.0",
