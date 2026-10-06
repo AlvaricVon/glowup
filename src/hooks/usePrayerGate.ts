@@ -1,14 +1,55 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { playAdhan, stopAdhan, unlockAudio } from '../lib/adhanAudio';
-import { calculateDayPrayers, type PrayerKey, type PrayerTime } from '../lib/prayer';
+import { PRAYER_NAMES, calculateDayPrayers, type PrayerKey, type PrayerTime } from '../lib/prayer';
 import { getCachedCoords } from '../lib/location';
+import { enterLockdown, exitLockdown, isNative, onNativeUnlock, showNativeLockScreen } from '../lib/lockdown';
+import { useAppStore } from '../store/useAppStore';
+
+const PRAYER_HABIT: Record<PrayerKey, string> = {
+  subuh: 'subuh-masjid',
+  dzuhur: 'dzuhur-masjid',
+  ashar: 'ashar-masjid',
+  maghrib: 'maghrib-masjid',
+  isya: 'isya-masjid',
+};
 
 export interface ActiveLock {
   prayerKey: PrayerKey;
   prayer: PrayerTime;
   startedAt: number;
-  endsAt: number | null;
-  durationMin: number;
+}
+
+const LOG_KEY = 'glowup-prayer-log';
+
+function readLog(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(LOG_KEY);
+    if (!raw) return {};
+    const o = JSON.parse(raw);
+    return typeof o === 'object' && o !== null ? (o as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeLog(log: Record<string, string>) {
+  try {
+    localStorage.setItem(LOG_KEY, JSON.stringify(log));
+  } catch {
+    // noop
+  }
+}
+
+function dayKey(d: Date): string {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function isConfirmed(log: Record<string, string>, key: string): boolean {
+  const ts = log[key];
+  if (!ts) return false;
+  const t = new Date(ts).getTime();
+  if (Number.isNaN(t)) return false;
+  return Date.now() - t < 12 * 60 * 60 * 1000;
 }
 
 export function usePrayerGate() {
@@ -16,7 +57,7 @@ export function usePrayerGate() {
   const [now, setNow] = useState(new Date());
   const coords = getCachedCoords();
   const prayersRef = useRef<PrayerTime[]>([]);
-  const seenRef = useRef<Set<string>>(new Set());
+  const logRef = useRef<Record<string, string>>(readLog());
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -28,56 +69,75 @@ export function usePrayerGate() {
       try {
         if (!coords) return;
         prayersRef.current = calculateDayPrayers({ latitude: coords.latitude, longitude: coords.longitude });
-      } catch {}
+      } catch {
+        // noop
+      }
     }
     void refresh();
     const id = setInterval(() => void refresh(), 60 * 60 * 1000);
     return () => clearInterval(id);
   }, [coords]);
 
-  const check = useCallback(async () => {
-    if (!coords) return;
-    const today = now.toISOString().split('T')[0];
-    const prayers = prayersRef.current;
-    if (prayers.length === 0) {
-      prayersRef.current = calculateDayPrayers({ latitude: coords.latitude, longitude: coords.longitude });
-    }
-    const p = prayersRef.current;
-    for (const pr of p) {
-      const keyDay = today + '::' + pr.key;
-      if (seenRef.current.has(keyDay)) continue;
-      if (now >= pr.time) {
-        const durationMin = 25;
-        if (durationMin <= 0) {
-          seenRef.current.add(keyDay);
-          continue;
-        }
-        try {
-          await unlockAudio();
-          await playAdhan();
-        } catch {}
-        setActiveLock({
-          prayerKey: pr.key,
-          prayer: pr,
-          startedAt: Date.now(),
-          endsAt: durationMin === Infinity ? null : Date.now() + durationMin * 60 * 1000,
-          durationMin,
-        });
-        seenRef.current.add(keyDay);
-        break;
+  const release = useCallback(() => {
+    stopAdhan();
+    setActiveLock(null);
+    void exitLockdown();
+  }, []);
+
+  /** Persist confirmations + auto-check the matching sholat habits. */
+  const commitConfirm = useCallback(() => {
+    const log = { ...logRef.current };
+    const today = dayKey(new Date());
+    const store = useAppStore.getState();
+    for (const pr of prayersRef.current) {
+      const key = today + '::' + pr.key;
+      if (new Date() >= pr.time && !isConfirmed(log, key)) {
+        log[key] = new Date().toISOString();
+        const habitId = PRAYER_HABIT[pr.key];
+        const entry = store.today?.habits?.[habitId];
+        if (!entry?.completed) void store.toggleHabit(habitId);
       }
     }
+    logRef.current = log;
+    writeLog(log);
+    release();
+  }, [release]);
+
+  // Native unlock event (user tapped the native lock screen button).
+  useEffect(() => {
+    void onNativeUnlock(() => commitConfirm());
+  }, [commitConfirm]);
+
+  const check = useCallback(() => {
+    if (!coords) return;
+    if (prayersRef.current.length === 0) {
+      prayersRef.current = calculateDayPrayers({ latitude: coords.latitude, longitude: coords.longitude });
+    }
+    const today = dayKey(now);
+    const log = logRef.current;
+
+    for (const pr of prayersRef.current) {
+      const key = today + '::' + pr.key;
+      if (isConfirmed(log, key)) continue;
+      if (now >= pr.time) {
+        void unlockAudio().then(() => playAdhan()).catch(() => undefined);
+        setActiveLock((cur) =>
+          cur && cur.prayerKey === pr.key ? cur : { prayerKey: pr.key, prayer: pr, startedAt: Date.now() },
+        );
+        if (isNative()) {
+          void enterLockdown();
+          void showNativeLockScreen(PRAYER_NAMES[pr.key]);
+        }
+        return;
+      }
+    }
+
+    setActiveLock(null);
   }, [now, coords]);
 
   useEffect(() => {
-    void check();
+    check();
   }, [check]);
 
-  const confirm = useCallback(() => {
-    stopAdhan();
-    setActiveLock(null);
-  }, []);
-
-  return { activeLock, now, confirm };
+  return { activeLock, now, confirm: commitConfirm, isNative: isNative() };
 }
-
