@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { playAdhan, stopAdhan, unlockAudio } from '../lib/adhanAudio';
 import { PRAYER_NAMES, calculateDayPrayers, type PrayerKey, type PrayerTime } from '../lib/prayer';
-import { getCachedCoords } from '../lib/location';
+import { getCachedCoords, getTimeZone, requestCoords, type Coords } from '../lib/location';
 import { enterLockdown, exitLockdown, isNative, onNativeUnlock, showNativeLockScreen } from '../lib/lockdown';
 import { readPrayerSettings, usePrayerSettings } from '../lib/prayerSettings';
 import { useAppStore } from '../store/useAppStore';
@@ -56,7 +56,7 @@ function isConfirmed(log: Record<string, string>, key: string): boolean {
 export function usePrayerGate() {
   const [activeLock, setActiveLock] = useState<ActiveLock | null>(null);
   const [now, setNow] = useState(new Date());
-  const coords = getCachedCoords();
+  const [coords, setCoords] = useState<Coords | null>(() => getCachedCoords());
   const prayersRef = useRef<PrayerTime[]>([]);
   const logRef = useRef<Record<string, string>>(readLog());
 
@@ -68,6 +68,31 @@ export function usePrayerGate() {
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const maybeRefresh = async () => {
+      if (cancelled || !navigator.geolocation) return;
+      try {
+        const cached = getCachedCoords();
+        const tz = getTimeZone();
+        if (cached && cached.tz === tz) return;
+        const c = await requestCoords();
+        if (!cancelled) setCoords(c);
+      } catch {
+        // keep old coords
+      }
+    };
+    void maybeRefresh();
+    const onVis = () => {
+      if (document.visibilityState === 'visible') void maybeRefresh();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, []);
 
   useEffect(() => {
