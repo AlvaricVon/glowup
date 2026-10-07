@@ -84,3 +84,25 @@ export async function nativeSetWhitelist(packages: string[]): Promise<boolean> {
     return false;
   }
 }
+
+declare global {
+  interface Window {
+    __glowup?: {
+      enterLockdown: () => Promise<{ deviceOwner: boolean } | null>;
+      exitLockdown: () => Promise<void>;
+      showLockScreen: (prayerName: string) => Promise<boolean>;
+      isDeviceOwner: () => Promise<boolean>;
+      getWhitelist: () => Promise<string[]>;
+    };
+  }
+}
+
+if (isNative()) {
+  window.__glowup = {
+    enterLockdown,
+    exitLockdown,
+    showLockScreen: showNativeLockScreen,
+    isDeviceOwner: nativeIsDeviceOwner,
+    getWhitelist: nativeGetWhitelist,
+  };
+}
