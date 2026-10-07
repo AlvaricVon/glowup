@@ -3,6 +3,7 @@ import { BottomNav, type Tab } from './components/BottomNav';
 import { IntroQuote } from './components/IntroQuote';
 import { SholatGate } from './components/SholatGate';
 import { useDayRollover } from './hooks/useDayRollover';
+import { useNightLock } from './hooks/useNightLock';
 import { useTheme } from './hooks/useTheme';
 import { startReminderLoop, stopReminderLoop } from './lib/notifications';
 import { INTRO_QUOTE } from './lib/quotes';
@@ -21,8 +22,9 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(true);
   const closeIntro = useCallback(() => setShowIntro(false), []);
 
-  useTheme();
+useTheme();
   useDayRollover();
+  useNightLock();
 
   useEffect(() => {
     void hydrate();

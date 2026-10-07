@@ -7,16 +7,26 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
+import java.util.Arrays;
+
 import app.voskhod.admin.GlowupDeviceAdmin;
 
 public class LockdownManager {
 
     private static final String PREFS = "glowup-lockdown";
     private static final String KEY_WHITELIST = "whitelist";
+    private static final String KEY_NORMAL_WHITELIST = "normalWhitelist";
 
     public static final String[] DEFAULT_WHITELIST = new String[] {
         "app.voskhod",
         "com.whatsapp"
+    };
+
+    public static final String[] NIGHT_WHITELIST = new String[] {
+        "app.voskhod",
+        "com.whatsapp",
+        "com.android.deskclock",
+        "com.andi.alquran.id"
     };
 
     private final Context context;
@@ -52,6 +62,28 @@ public class LockdownManager {
             dpm.setLockTaskPackages(adminComponent, getWhitelist());
         } catch (Exception ignored) {
         }
+    }
+
+    /**
+     * Move the device to the night whitelist. Saves the current whitelist once
+     * (only if it is not already the night list) so it can be restored later.
+     */
+    public void activateNightLock() {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String[] cur = getWhitelist();
+        if (!Arrays.equals(cur, NIGHT_WHITELIST)) {
+            prefs.edit().putString(KEY_NORMAL_WHITELIST, String.join(",", cur)).apply();
+        }
+        setWhitelist(NIGHT_WHITELIST);
+    }
+
+    /** Restore the pre-night whitelist (or the default) and clear the backup. */
+    public void deactivateNightLock() {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String normal = prefs.getString(KEY_NORMAL_WHITELIST, null);
+        String[] restored = (normal != null && !normal.isEmpty()) ? normal.split(",") : DEFAULT_WHITELIST;
+        prefs.edit().remove(KEY_NORMAL_WHITELIST).apply();
+        setWhitelist(restored);
     }
 
     public void enterLockdown(Activity activity) {

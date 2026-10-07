@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Crosshair, MapPin, Play, RefreshCw, ScanFace, Shield, ShieldAlert, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Crosshair, MapPin, Moon, Play, RefreshCw, ScanFace, Shield, ShieldAlert, X } from 'lucide-react';
 import { PRAYER_METHODS, calculateDayPrayers, type PrayerTime } from '../lib/prayer';
 import { getCachedCoords, requestCoords, setCachedCoords, type Coords } from '../lib/location';
 import {
@@ -11,7 +12,16 @@ import {
   nativeSetWhitelist,
 } from '../lib/lockdown';
 import { playAdhan, stopAdhan, unlockAudio } from '../lib/adhanAudio';
+import {
+  applyNightLock,
+  getNightLockState,
+  isNightLockEnabled,
+  pagiRemaining,
+  releaseNightLock,
+  setNightLockEnabled,
+} from '../lib/nightLock';
 import { DEFAULT_SETTINGS, usePrayerSettings } from '../lib/prayerSettings';
+import { useAppStore } from '../store/useAppStore';
 
 interface Props {
   onClose: () => void;
@@ -66,6 +76,42 @@ export function PrayerPanel({ onClose }: Props) {
   const [authMsg, setAuthMsg] = useState('');
   const [needEnroll, setNeedEnroll] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [nightEnabled, setNightEnabledState] = useState(isNightLockEnabled());
+  const [nightState, setNightState] = useState(() => getNightLockState());
+  const [nightBusy, setNightBusy] = useState(false);
+  const today = useAppStore((s) => s.today);
+
+  // The panel is fullscreen — lock page scroll while it's mounted.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  const toggleNightEnabled = useCallback(() => {
+    setNightEnabledState((v) => {
+      setNightLockEnabled(!v);
+      return !v;
+    });
+  }, []);
+
+  const handleNightAction = useCallback(async () => {
+    setNightBusy(true);
+    try {
+      if (nightState.active) {
+        const r = await nativeAuthenticate('Lepas kunci malam');
+        if (!r?.success) return;
+        await releaseNightLock();
+      } else {
+        await applyNightLock();
+      }
+      setNightState(getNightLockState());
+    } finally {
+      setNightBusy(false);
+    }
+  }, [nightState.active]);
 
   useEffect(() => {
     let cancelled = false;
@@ -190,70 +236,74 @@ export function PrayerPanel({ onClose }: Props) {
   const [manualLng, setManualLng] = useState('');
 
   if (auth !== 'open') {
-    return (
-      <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-neutral-950/95 backdrop-blur">
-        <div className="w-full max-w-sm space-y-8 px-6 py-10 text-center">
-          <div className="relative mx-auto flex h-44 w-44 items-center justify-center">
-            <div
-              className="absolute inset-0 animate-spin rounded-full opacity-90"
-              style={{
-                background: 'conic-gradient(from 0deg, transparent 0deg, #a855f7 120deg, transparent 130deg, transparent 180deg, #22d3ee 300deg, transparent 310deg)',
-                animationDuration: '1.2s',
-              }}
-            />
-            <div
-              className="absolute inset-2 animate-spin rounded-full opacity-70"
-              style={{
-                background: 'conic-gradient(from 180deg, transparent 0deg, #6366f1 140deg, transparent 150deg)',
-                animationDuration: '1.8s',
-                animationDirection: 'reverse',
-              }}
-            />
-            <div className="absolute inset-5 rounded-full border border-neutral-800 bg-neutral-900" />
-            <div className="relative flex h-24 w-24 animate-pulse items-center justify-center rounded-full border border-dashed border-brand-500/70">
-              <ScanFace size={46} className="text-brand-400" />
+    return createPortal(
+      <div className="fixed inset-0 z-[90] h-dvh w-full overscroll-contain overflow-y-auto bg-neutral-950/95 backdrop-blur">
+        <div className="flex min-h-full items-center justify-center py-10">
+          <div className="w-full max-w-sm space-y-8 px-6 text-center">
+            <div className="relative mx-auto flex h-44 w-44 items-center justify-center">
+              <div
+                className="absolute inset-0 animate-spin rounded-full opacity-90"
+                style={{
+                  background:
+                    'conic-gradient(from 0deg, transparent 0deg, #a855f7 120deg, transparent 130deg, transparent 180deg, #22d3ee 300deg, transparent 310deg)',
+                  animationDuration: '1.2s',
+                }}
+              />
+              <div
+                className="absolute inset-2 animate-spin rounded-full opacity-70"
+                style={{
+                  background: 'conic-gradient(from 180deg, transparent 0deg, #6366f1 140deg, transparent 150deg)',
+                  animationDuration: '1.8s',
+                  animationDirection: 'reverse',
+                }}
+              />
+              <div className="absolute inset-5 rounded-full border border-neutral-800 bg-neutral-900" />
+              <div className="relative flex h-24 w-24 animate-pulse items-center justify-center rounded-full border border-dashed border-brand-500/70">
+                <ScanFace size={46} className="text-brand-400" />
+              </div>
             </div>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-widest text-brand-400">Panel Tersembunyi</p>
-            <h1 className="text-2xl font-extrabold text-neutral-100">Kunci Biometrik</h1>
-            <p className="mx-auto max-w-xs text-sm text-neutral-400">
-              {scanning ? 'Scan berjalan, tahan wajah lo di depan HP…' : authMsg || 'Scan wajah atau sidik jari lo buat masuk.'}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => void retryAuth()}
-              disabled={scanning}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-500 px-6 py-3.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-60"
-            >
-              <ScanFace size={16} /> {scanning ? 'Minta izin…' : 'Coba scan'}
-            </button>
-            {needEnroll && (
+            <div className="space-y-2">
+              <p className="text-xs font-bold uppercase tracking-widest text-brand-400">Panel Tersembunyi</p>
+              <h1 className="text-2xl font-extrabold text-neutral-100">Kunci Biometrik</h1>
+              <p className="mx-auto max-w-xs text-sm text-neutral-400">
+                {scanning ? 'Scan berjalan, hadapin wajah lo ke layar…' : authMsg || 'Scan wajah lo buat masuk.'}
+              </p>
+            </div>
+            <div className="space-y-2">
               <button
                 type="button"
-                onClick={() => void nativeOpenBiometricEnrollment()}
-                className="w-full rounded-2xl border border-neutral-700 px-6 py-3 text-sm font-semibold text-neutral-200 hover:bg-neutral-800"
+                onClick={() => void retryAuth()}
+                disabled={scanning}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-500 px-6 py-3.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-60"
               >
-                Daftarin wajah / sidik jari
+                <ScanFace size={16} /> {scanning ? 'Minta izin…' : 'Coba scan'}
               </button>
-            )}
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full rounded-2xl border border-neutral-800 px-6 py-3 text-sm font-medium text-neutral-500 hover:bg-neutral-900"
-            >
-              Tutup
-            </button>
+              {needEnroll && (
+                <button
+                  type="button"
+                  onClick={() => void nativeOpenBiometricEnrollment()}
+                  className="w-full rounded-2xl border border-neutral-700 px-6 py-3 text-sm font-semibold text-neutral-200 hover:bg-neutral-800"
+                >
+                  Daftarin wajah / sidik jari
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full rounded-2xl border border-neutral-800 px-6 py-3 text-sm font-medium text-neutral-500 hover:bg-neutral-900"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body,
     );
   }
 
-  return (
-    <div className="fixed inset-0 z-[90] overflow-y-auto bg-neutral-950/95 backdrop-blur">
+  return createPortal(
+    <div className="fixed inset-0 z-[90] h-dvh w-full overscroll-contain overflow-y-auto bg-neutral-950/95 backdrop-blur">
       <div className="mx-auto w-full max-w-lg space-y-5 px-4 py-6 pb-24">
         <header className="flex items-center justify-between">
           <div>
@@ -360,6 +410,64 @@ export function PrayerPanel({ onClose }: Props) {
           />
         </section>
 
+        {/* Kunci malam */}
+        <section className="space-y-3 rounded-3xl border border-neutral-800 bg-neutral-900/70 p-4">
+          <button
+            type="button"
+            onClick={toggleNightEnabled}
+            className="flex w-full items-center justify-between gap-3 text-left"
+          >
+            <span className="min-w-0">
+              <span className="flex items-center gap-2 text-sm font-bold text-neutral-200">
+                <Moon size={15} className="text-brand-400" /> Kunci malam (jam 10)
+              </span>
+              <span className="mt-0.5 block text-xs text-neutral-500">
+                22.00 semua app dikunci, cuma WhatsApp, Jam &amp; Alarm, Al-Quran Indonesia, dan app ini yang kebuka.
+                Baru kebuka lagi pas semua checklist PAGI beres.
+              </span>
+            </span>
+            <span
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                nightEnabled ? 'bg-brand-500' : 'bg-neutral-300 dark:bg-neutral-700'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                  nightEnabled ? 'left-[22px]' : 'left-0.5'
+                }`}
+              />
+            </span>
+          </button>
+          {nightEnabled && (
+            <div className="space-y-2 border-t border-neutral-800 pt-3">
+              <p className="text-xs text-neutral-400">
+                Status:{' '}
+                {nightState.active ? (
+                  <span className="font-semibold text-brand-400">AKTIF</span>
+                ) : (
+                  <span className="font-semibold text-neutral-200">nonaktif — nyala otomatis jam 22.00</span>
+                )}
+                {' · '}pagi tersisa: <b className="text-neutral-200">{pagiRemaining(today)}</b>
+              </p>
+              <button
+                type="button"
+                onClick={() => void handleNightAction()}
+                disabled={nightBusy || deviceOwner !== true}
+                className="w-full rounded-xl border border-neutral-700 px-3 py-2.5 text-xs font-semibold text-neutral-200 hover:bg-neutral-800 disabled:opacity-50"
+              >
+                {nightBusy
+                  ? 'Proses…'
+                  : nightState.active
+                    ? 'Lepas kunci malam (butuh scan wajah)'
+                    : 'Aktifin sekarang'}
+              </button>
+              {deviceOwner === false && (
+                <p className="text-xs text-neutral-500">Mode kunci penuh cuma jalan kalo app jadi Device Owner.</p>
+              )}
+            </div>
+          )}
+        </section>
+
         {/* Metode */}
         <section className="rounded-3xl border border-neutral-800 bg-neutral-900/70 p-4">
           <label htmlFor="method" className="mb-2 block text-sm font-bold text-neutral-200">
@@ -443,6 +551,7 @@ export function PrayerPanel({ onClose }: Props) {
           </div>
         </section>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

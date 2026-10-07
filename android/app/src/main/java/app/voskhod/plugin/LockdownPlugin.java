@@ -21,6 +21,7 @@ import java.util.concurrent.Executor;
 
 import app.voskhod.lockdown.LockScreenActivity;
 import app.voskhod.lockdown.LockdownManager;
+import app.voskhod.lockdown.NightWakeScheduler;
 
 @CapacitorPlugin(name = "Lockdown")
 public class LockdownPlugin extends Plugin {
@@ -105,10 +106,10 @@ public class LockdownPlugin extends Plugin {
         Activity activity = getActivity();
         if (activity == null) { call.reject("no activity"); return; }
         if (!(activity instanceof FragmentActivity)) { call.reject("need fragment activity"); return; }
-        FragmentActivity fa = (FragmentActivity) activity;
+FragmentActivity fa = (FragmentActivity) activity;
         BiometricManager bm = BiometricManager.from(getContext());
-        int result = bm.canAuthenticate(
-                BiometricManager.Authenticators.BIOMETRIC_WEAK | BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+        // WEAK-only so MIUI offers the FACE sensor (no DEVICE_CREDENTIAL fallback).
+        int result = bm.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK);
         if (result != BiometricManager.BIOMETRIC_SUCCESS) {
             JSObject ret = new JSObject();
             ret.put("available", false);
@@ -118,7 +119,7 @@ public class LockdownPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
-Executor executor = ContextCompat.getMainExecutor(fa);
+        Executor executor = ContextCompat.getMainExecutor(fa);
         BiometricPrompt prompt = new BiometricPrompt(fa, executor, new BiometricPrompt.AuthenticationCallback() {
             @Override
             public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
@@ -144,11 +145,29 @@ Executor executor = ContextCompat.getMainExecutor(fa);
         });
         BiometricPrompt.PromptInfo info = new BiometricPrompt.PromptInfo.Builder()
                 .setTitle("Buka Panel Tersembunyi")
-                .setSubtitle("Scan wajah atau sidik jari buat masuk")
-                .setAllowedAuthenticators(
-                        BiometricManager.Authenticators.BIOMETRIC_WEAK | BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                .setSubtitle("Scan wajah buat masuk")
+                .setNegativeButtonText("Batal")
+                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
                 .build();
         fa.runOnUiThread(() -> prompt.authenticate(info));
+    }
+
+@PluginMethod
+    public void activateNightLock(PluginCall call) {
+        LockdownManager.from(getContext()).activateNightLock();
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void deactivateNightLock(PluginCall call) {
+        LockdownManager.from(getContext()).deactivateNightLock();
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void scheduleNightAlarm(PluginCall call) {
+        NightWakeScheduler.scheduleNext(getContext());
+        call.resolve();
     }
 
     @PluginMethod

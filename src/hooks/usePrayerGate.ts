@@ -3,6 +3,7 @@ import { playAdhan, stopAdhan, unlockAudio } from '../lib/adhanAudio';
 import { PRAYER_NAMES, calculateDayPrayers, type PrayerKey, type PrayerTime } from '../lib/prayer';
 import { getCachedCoords, getTimeZone, requestCoords, type Coords } from '../lib/location';
 import { enterLockdown, exitLockdown, isNative, onNativeUnlock, showNativeLockScreen } from '../lib/lockdown';
+import { getNightLockState } from '../lib/nightLock';
 import { readPrayerSettings, usePrayerSettings } from '../lib/prayerSettings';
 import { useAppStore } from '../store/useAppStore';
 
@@ -127,7 +128,8 @@ export function usePrayerGate() {
   const release = useCallback(() => {
     stopAdhan();
     setActiveLock(null);
-    void exitLockdown();
+    // Don't kill the night-lock LockTask — releasing a prayer gate must not disarm it.
+    if (!getNightLockState().active) void exitLockdown();
   }, []);
 
   /** Persist confirmations (+ auto-check the matching sholat habits). */
@@ -180,7 +182,7 @@ export function usePrayerGate() {
         setActiveLock((cur) =>
           cur && cur.prayerKey === pr.key ? cur : { prayerKey: pr.key, prayer: pr, startedAt: Date.now() },
         );
-        if (isNative() && lockEnabled) {
+        if (isNative() && lockEnabled && !getNightLockState().active) {
           void enterLockdown();
           void showNativeLockScreen(PRAYER_NAMES[pr.key]);
         }

@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.getcapacitor.BridgeActivity;
 
+import app.voskhod.lockdown.NightWakeScheduler;
 import app.voskhod.plugin.LockdownPlugin;
 
 public class MainActivity extends BridgeActivity {
@@ -11,5 +12,6 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(LockdownPlugin.class);
         super.onCreate(savedInstanceState);
+        NightWakeScheduler.scheduleNext(this);
     }
 }

@@ -16,6 +16,9 @@ interface LockdownPlugin {
     message: string;
   }>;
   openBiometricEnrollment(): Promise<void>;
+  activateNightLock(): Promise<void>;
+  deactivateNightLock(): Promise<void>;
+  scheduleNightAlarm(): Promise<void>;
   addListener(eventName: 'unlocked', listenerFunc: () => void): Promise<PluginListenerHandle>;
 }
 
@@ -97,12 +100,17 @@ export async function nativeSetWhitelist(packages: string[]): Promise<boolean> {
 declare global {
   interface Window {
     __glowup?: {
-      enterLockdown: () => Promise<{ deviceOwner: boolean } | null>;
-      exitLockdown: () => Promise<void>;
-      showLockScreen: (prayerName: string) => Promise<boolean>;
-      isDeviceOwner: () => Promise<boolean>;
-      getWhitelist: () => Promise<string[]>;
-      authenticate: (reason: string) => Promise<NativeAuthResult | null>;
+      enterLockdown?: () => Promise<{ deviceOwner: boolean } | null>;
+      exitLockdown?: () => Promise<void>;
+      showLockScreen?: (prayerName: string) => Promise<boolean>;
+      isDeviceOwner?: () => Promise<boolean>;
+      getWhitelist?: () => Promise<string[]>;
+      authenticate?: (reason: string) => Promise<NativeAuthResult | null>;
+      nightApply?: () => Promise<boolean>;
+      nightRelease?: () => Promise<boolean>;
+      nightCompleteAllPagi?: () => Promise<number>;
+      scheduleNightAlarm?: () => Promise<void>;
+      getNightState?: () => { active: boolean; date: string; pagiRemaining: number };
     };
   }
 }
@@ -136,6 +144,35 @@ export async function nativeOpenBiometricEnrollment(): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+export async function nativeActivateNightLock(): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    await Native.activateNightLock();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function nativeDeactivateNightLock(): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    await Native.deactivateNightLock();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function nativeScheduleNightAlarm(): Promise<void> {
+  if (!isNative()) return;
+  try {
+    await Native.scheduleNightAlarm();
+  } catch {
+    // noop
   }
 }
 
