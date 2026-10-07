@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Crosshair, MapPin, Play, RefreshCw, Shield, ShieldAlert, X } from 'lucide-react';
+import { Crosshair, MapPin, Play, RefreshCw, ScanFace, Shield, ShieldAlert, X } from 'lucide-react';
 import { PRAYER_METHODS, calculateDayPrayers, type PrayerTime } from '../lib/prayer';
 import { getCachedCoords, requestCoords, setCachedCoords, type Coords } from '../lib/location';
-import { isNative, nativeGetWhitelist, nativeIsDeviceOwner, nativeSetWhitelist } from '../lib/lockdown';
+import {
+  isNative,
+  nativeAuthenticate,
+  nativeGetWhitelist,
+  nativeIsDeviceOwner,
+  nativeOpenBiometricEnrollment,
+  nativeSetWhitelist,
+} from '../lib/lockdown';
 import { playAdhan, stopAdhan, unlockAudio } from '../lib/adhanAudio';
 import { DEFAULT_SETTINGS, usePrayerSettings } from '../lib/prayerSettings';
 
@@ -55,6 +62,58 @@ export function PrayerPanel({ onClose }: Props) {
   const [whitelistMsg, setWhitelistMsg] = useState('');
   const [locMsg, setLocMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const [auth, setAuth] = useState<'checking' | 'auth' | 'open'>('checking');
+  const [authMsg, setAuthMsg] = useState('');
+  const [needEnroll, setNeedEnroll] = useState(false);
+  const [scanning, setScanning] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (!isNative()) {
+        if (!cancelled) setAuth('open');
+        return;
+      }
+      setAuth('checking');
+      const r = await nativeAuthenticate('Buka Panel Tersembunyi');
+      if (cancelled) return;
+      if (r?.success) {
+        setAuth('open');
+      } else if (r?.needEnroll) {
+        setNeedEnroll(true);
+        setAuthMsg('Wajah/sidik jari belum didaftarin di HP. Daftarin dulu biar bisa buka.');
+        setAuth('auth');
+      } else if (r?.available) {
+        setNeedEnroll(false);
+        setAuthMsg(r.cancelled ? 'Batal. Scan lagi pas lo siap.' : 'Gagal scan, coba lagi.');
+        setAuth('auth');
+      } else {
+        setAuth('open');
+      }
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const retryAuth = useCallback(async () => {
+    setScanning(true);
+    setAuthMsg('');
+    const r = await nativeAuthenticate('Buka Panel Tersembunyi');
+    setScanning(false);
+    if (r?.success) {
+      setAuth('open');
+    } else if (r?.needEnroll) {
+      setNeedEnroll(true);
+      setAuthMsg('Wajah/sidik jari belum didaftarin di HP. Daftarin dulu biar bisa buka.');
+    } else if (r?.available) {
+      setNeedEnroll(false);
+      setAuthMsg(r.cancelled ? 'Batal. Scan lagi pas lo siap.' : 'Gagal scan, coba lagi.');
+    } else {
+      setAuth('open');
+    }
+  }, []);
 
   useEffect(() => {
     void nativeGetWhitelist().then((pkgs) => setWhitelistText(pkgs.join('\n')));
@@ -129,6 +188,69 @@ export function PrayerPanel({ onClose }: Props) {
 
   const [manualLat, setManualLat] = useState('');
   const [manualLng, setManualLng] = useState('');
+
+  if (auth !== 'open') {
+    return (
+      <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-neutral-950/95 backdrop-blur">
+        <div className="w-full max-w-sm space-y-8 px-6 py-10 text-center">
+          <div className="relative mx-auto flex h-44 w-44 items-center justify-center">
+            <div
+              className="absolute inset-0 animate-spin rounded-full opacity-90"
+              style={{
+                background: 'conic-gradient(from 0deg, transparent 0deg, #a855f7 120deg, transparent 130deg, transparent 180deg, #22d3ee 300deg, transparent 310deg)',
+                animationDuration: '1.2s',
+              }}
+            />
+            <div
+              className="absolute inset-2 animate-spin rounded-full opacity-70"
+              style={{
+                background: 'conic-gradient(from 180deg, transparent 0deg, #6366f1 140deg, transparent 150deg)',
+                animationDuration: '1.8s',
+                animationDirection: 'reverse',
+              }}
+            />
+            <div className="absolute inset-5 rounded-full border border-neutral-800 bg-neutral-900" />
+            <div className="relative flex h-24 w-24 animate-pulse items-center justify-center rounded-full border border-dashed border-brand-500/70">
+              <ScanFace size={46} className="text-brand-400" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-brand-400">Panel Tersembunyi</p>
+            <h1 className="text-2xl font-extrabold text-neutral-100">Kunci Biometrik</h1>
+            <p className="mx-auto max-w-xs text-sm text-neutral-400">
+              {scanning ? 'Scan berjalan, tahan wajah lo di depan HP…' : authMsg || 'Scan wajah atau sidik jari lo buat masuk.'}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => void retryAuth()}
+              disabled={scanning}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-500 px-6 py-3.5 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-60"
+            >
+              <ScanFace size={16} /> {scanning ? 'Minta izin…' : 'Coba scan'}
+            </button>
+            {needEnroll && (
+              <button
+                type="button"
+                onClick={() => void nativeOpenBiometricEnrollment()}
+                className="w-full rounded-2xl border border-neutral-700 px-6 py-3 text-sm font-semibold text-neutral-200 hover:bg-neutral-800"
+              >
+                Daftarin wajah / sidik jari
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full rounded-2xl border border-neutral-800 px-6 py-3 text-sm font-medium text-neutral-500 hover:bg-neutral-900"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[90] overflow-y-auto bg-neutral-950/95 backdrop-blur">

@@ -7,6 +7,15 @@ interface LockdownPlugin {
   isDeviceOwner(): Promise<{ value: boolean }>;
   getWhitelist(): Promise<{ packages: string[] }>;
   setWhitelist(opts: { packages: string[] }): Promise<void>;
+  authenticate(opts: { reason: string }): Promise<{
+    available: boolean;
+    success: boolean;
+    cancelled: boolean;
+    needEnroll: boolean;
+    code: number;
+    message: string;
+  }>;
+  openBiometricEnrollment(): Promise<void>;
   addListener(eventName: 'unlocked', listenerFunc: () => void): Promise<PluginListenerHandle>;
 }
 
@@ -93,7 +102,40 @@ declare global {
       showLockScreen: (prayerName: string) => Promise<boolean>;
       isDeviceOwner: () => Promise<boolean>;
       getWhitelist: () => Promise<string[]>;
+      authenticate: (reason: string) => Promise<NativeAuthResult | null>;
     };
+  }
+}
+
+export interface NativeAuthResult {
+  available: boolean;
+  success: boolean;
+  cancelled: boolean;
+  needEnroll: boolean;
+}
+
+export async function nativeAuthenticate(reason: string): Promise<NativeAuthResult | null> {
+  if (!isNative()) return null;
+  try {
+    const r = await Native.authenticate({ reason });
+    return {
+      available: !!r.available,
+      success: !!r.success,
+      cancelled: !!r.cancelled,
+      needEnroll: !!r.needEnroll,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function nativeOpenBiometricEnrollment(): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    await Native.openBiometricEnrollment();
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -104,5 +146,6 @@ if (isNative()) {
     showLockScreen: showNativeLockScreen,
     isDeviceOwner: nativeIsDeviceOwner,
     getWhitelist: nativeGetWhitelist,
+    authenticate: nativeAuthenticate,
   };
 }

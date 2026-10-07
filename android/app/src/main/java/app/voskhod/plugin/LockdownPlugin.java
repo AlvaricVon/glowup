@@ -3,6 +3,12 @@ package app.voskhod.plugin;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.provider.Settings;
+
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -11,6 +17,7 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.Executor;
 
 import app.voskhod.lockdown.LockScreenActivity;
 import app.voskhod.lockdown.LockdownManager;
@@ -92,4 +99,78 @@ public class LockdownPlugin extends Plugin {
             call.reject("bad packages", e);
         }
     }
+
+@PluginMethod
+    public void authenticate(PluginCall call) {
+        Activity activity = getActivity();
+        if (activity == null) { call.reject("no activity"); return; }
+        if (!(activity instanceof FragmentActivity)) { call.reject("need fragment activity"); return; }
+        FragmentActivity fa = (FragmentActivity) activity;
+        BiometricManager bm = BiometricManager.from(getContext());
+        int result = bm.canAuthenticate(
+                BiometricManager.Authenticators.BIOMETRIC_WEAK | BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+        if (result != BiometricManager.BIOMETRIC_SUCCESS) {
+            JSObject ret = new JSObject();
+            ret.put("available", false);
+            ret.put("success", false);
+            ret.put("cancelled", false);
+            ret.put("needEnroll", result == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED);
+            call.resolve(ret);
+            return;
+        }
+Executor executor = ContextCompat.getMainExecutor(fa);
+        BiometricPrompt prompt = new BiometricPrompt(fa, executor, new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                JSObject ok = new JSObject();
+                ok.put("available", true);
+                ok.put("success", true);
+                ok.put("cancelled", false);
+                ok.put("needEnroll", false);
+                call.resolve(ok);
+            }
+
+            @Override
+            public void onAuthenticationError(int errorCode, CharSequence errString) {
+                JSObject err = new JSObject();
+                err.put("available", true);
+                err.put("success", false);
+                err.put("cancelled", errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON || errorCode == BiometricPrompt.ERROR_USER_CANCELED);
+                err.put("needEnroll", false);
+                err.put("code", errorCode);
+                err.put("message", errString != null ? errString.toString() : "");
+                call.resolve(err);
+            }
+        });
+        BiometricPrompt.PromptInfo info = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Buka Panel Tersembunyi")
+                .setSubtitle("Scan wajah atau sidik jari buat masuk")
+                .setAllowedAuthenticators(
+                        BiometricManager.Authenticators.BIOMETRIC_WEAK | BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                .build();
+        fa.runOnUiThread(() -> prompt.authenticate(info));
+    }
+
+    @PluginMethod
+    public void openBiometricEnrollment(PluginCall call) {
+        Context ctx = getContext();
+        try {
+            Intent enroll = new Intent(Settings.ACTION_BIOMETRIC_ENROLL);
+            enroll.putExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED,
+                    BiometricManager.Authenticators.BIOMETRIC_STRONG);
+            enroll.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ctx.startActivity(enroll);
+            call.resolve();
+        } catch (Exception e) {
+            try {
+                Intent sec = new Intent(Settings.ACTION_SECURITY_SETTINGS);
+                sec.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                ctx.startActivity(sec);
+                call.resolve();
+            } catch (Exception e2) {
+                call.reject("no enrollment settings");
+            }
+        }
+    }
 }
+
