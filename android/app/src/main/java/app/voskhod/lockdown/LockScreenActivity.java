@@ -39,6 +39,15 @@ public class LockScreenActivity extends Activity {
                         | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                         | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
+        LockdownManager lm = LockdownManager.from(this);
+        if (lm.isDeviceOwner()) {
+            lm.applyLockTaskWhitelist();
+            try {
+                startLockTask();
+            } catch (Exception ignored) {
+            }
+        }
+
         String prayerName = getIntent().getStringExtra(EXTRA_PRAYER_NAME);
         if (prayerName == null) prayerName = "Sholat";
 
@@ -50,6 +59,11 @@ public class LockScreenActivity extends Activity {
         tvMsg.setText("Waktu " + prayerName + ". Belum konfirmasi = HP tetap terkunci.");
 
         btnUnlock.setOnClickListener(v -> {
+            try {
+                stopLockTask();
+            } catch (Exception ignored) {
+            }
+            AdhanPlayer.stop();
             LockdownPlugin.notifyUnlocked();
             finish();
         });

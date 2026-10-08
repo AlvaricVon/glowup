@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { playAdhan, stopAdhan, unlockAudio } from '../lib/adhanAudio';
 import { PRAYER_NAMES, calculateDayPrayers, type PrayerKey, type PrayerTime } from '../lib/prayer';
 import { getCachedCoords, getTimeZone, requestCoords, type Coords } from '../lib/location';
-import { enterLockdown, exitLockdown, isNative, onNativeUnlock, showNativeLockScreen } from '../lib/lockdown';
+import { enterLockdown, exitLockdown, isNative, nativePlayAdhan, nativeSchedulePrayerAlarms, nativeStopAdhan, onNativeUnlock, showNativeLockScreen } from '../lib/lockdown';
 import { getNightLockState } from '../lib/nightLock';
 import { readPrayerSettings, usePrayerSettings } from '../lib/prayerSettings';
 import { useAppStore } from '../store/useAppStore';
@@ -125,8 +125,49 @@ export function usePrayerGate() {
     return () => clearInterval(id);
   }, [coords, method]);
 
+  // Arm native prayer alarms (today + tomorrow) so the lock screen + adhan still
+  // fire even when the WebView is frozen in the background.
+  useEffect(() => {
+    if (!coords || !enabled || !isNative()) return;
+    const arm = () => {
+      try {
+        const alarms: { t: number; name: string }[] = [];
+        const seen = new Set<number>();
+        for (const d of [new Date(), new Date(Date.now() + 24 * 60 * 60 * 1000)]) {
+          const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+          for (const pr of calculateDayPrayers({
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            method,
+            date: day,
+          })) {
+            const t = pr.time.getTime();
+            if (t > Date.now() + 30_000 && !seen.has(t)) {
+              seen.add(t);
+              alarms.push({ t, name: pr.name });
+            }
+          }
+        }
+        if (alarms.length > 0) void nativeSchedulePrayerAlarms(alarms);
+      } catch {
+        // noop
+      }
+    };
+    arm();
+    const id = setInterval(arm, 30 * 60 * 1000);
+    const onVis = () => {
+      if (document.visibilityState === 'visible') arm();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [coords, enabled, method]);
+
   const release = useCallback(() => {
     stopAdhan();
+    if (isNative()) void nativeStopAdhan();
     setActiveLock(null);
     // Don't kill the night-lock LockTask — releasing a prayer gate must not disarm it.
     if (!getNightLockState().active) void exitLockdown();
@@ -178,7 +219,11 @@ export function usePrayerGate() {
       const key = today + '::' + pr.key;
       if (isConfirmed(log, key)) continue;
       if (now >= pr.time) {
-        void unlockAudio().then(() => playAdhan()).catch(() => undefined);
+        if (isNative()) {
+          void nativePlayAdhan();
+        } else {
+          void unlockAudio().then(() => playAdhan()).catch(() => undefined);
+        }
         setActiveLock((cur) =>
           cur && cur.prayerKey === pr.key ? cur : { prayerKey: pr.key, prayer: pr, startedAt: Date.now() },
         );

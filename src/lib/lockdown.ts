@@ -19,6 +19,9 @@ interface LockdownPlugin {
   activateNightLock(): Promise<void>;
   deactivateNightLock(): Promise<void>;
   scheduleNightAlarm(): Promise<void>;
+  playAdhan(): Promise<void>;
+  stopAdhan(): Promise<void>;
+  schedulePrayerAlarms(opts: { alarms: { t: number; name: string }[] }): Promise<void>;
   addListener(eventName: 'unlocked', listenerFunc: () => void): Promise<PluginListenerHandle>;
 }
 
@@ -110,6 +113,8 @@ declare global {
       nightRelease?: () => Promise<boolean>;
       nightCompleteAllPagi?: () => Promise<number>;
       scheduleNightAlarm?: () => Promise<void>;
+      playAdhan?: () => Promise<void>;
+      stopAdhan?: () => Promise<void>;
       getNightState?: () => { active: boolean; date: string; pagiRemaining: number };
     };
   }
@@ -176,6 +181,33 @@ export async function nativeScheduleNightAlarm(): Promise<void> {
   }
 }
 
+export async function nativePlayAdhan(): Promise<void> {
+  if (!isNative()) return;
+  try {
+    await Native.playAdhan();
+  } catch {
+    // noop
+  }
+}
+
+export async function nativeStopAdhan(): Promise<void> {
+  if (!isNative()) return;
+  try {
+    await Native.stopAdhan();
+  } catch {
+    // noop
+  }
+}
+
+export async function nativeSchedulePrayerAlarms(alarms: { t: number; name: string }[]): Promise<void> {
+  if (!isNative() || alarms.length === 0) return;
+  try {
+    await Native.schedulePrayerAlarms({ alarms });
+  } catch {
+    // noop
+  }
+}
+
 if (isNative()) {
   window.__glowup = {
     enterLockdown,
@@ -184,5 +216,7 @@ if (isNative()) {
     isDeviceOwner: nativeIsDeviceOwner,
     getWhitelist: nativeGetWhitelist,
     authenticate: nativeAuthenticate,
+    playAdhan: nativePlayAdhan,
+    stopAdhan: nativeStopAdhan,
   };
 }

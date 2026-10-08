@@ -51,6 +51,14 @@
             </intent-filter>
         </receiver>
             <receiver
+            android:name=".lockdown.PrayerWakeReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="app.voskhod.action.PRAYER" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+            <receiver
             android:name=".admin.GlowupDeviceAdmin"
             android:permission="android.permission.BIND_DEVICE_ADMIN"
             android:exported="true">

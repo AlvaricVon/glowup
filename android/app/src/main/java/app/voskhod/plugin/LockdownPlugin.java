@@ -19,9 +19,11 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
 
+import app.voskhod.lockdown.AdhanPlayer;
 import app.voskhod.lockdown.LockScreenActivity;
 import app.voskhod.lockdown.LockdownManager;
 import app.voskhod.lockdown.NightWakeScheduler;
+import app.voskhod.lockdown.PrayerWakeScheduler;
 
 @CapacitorPlugin(name = "Lockdown")
 public class LockdownPlugin extends Plugin {
@@ -170,7 +172,7 @@ FragmentActivity fa = (FragmentActivity) activity;
         call.resolve();
     }
 
-    @PluginMethod
+@PluginMethod
     public void openBiometricEnrollment(PluginCall call) {
         Context ctx = getContext();
         try {
@@ -189,6 +191,41 @@ FragmentActivity fa = (FragmentActivity) activity;
             } catch (Exception e2) {
                 call.reject("no enrollment settings");
             }
+        }
+    }
+
+    @PluginMethod
+    public void playAdhan(PluginCall call) {
+        AdhanPlayer.play(getContext());
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void stopAdhan(PluginCall call) {
+        AdhanPlayer.stop();
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void schedulePrayerAlarms(PluginCall call) {
+        com.getcapacitor.JSArray arr = call.getArray("alarms");
+        if (arr == null) {
+            call.reject("alarms required");
+            return;
+        }
+        try {
+            org.json.JSONArray json = new org.json.JSONArray();
+            for (int i = 0; i < arr.length(); i++) {
+                org.json.JSONObject o = arr.getJSONObject(i);
+                org.json.JSONObject j = new org.json.JSONObject();
+                j.put("t", o.optLong("t"));
+                j.put("name", o.optString("name"));
+                json.put(j);
+            }
+            PrayerWakeScheduler.schedule(getContext(), json);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("bad alarms", e);
         }
     }
 }
