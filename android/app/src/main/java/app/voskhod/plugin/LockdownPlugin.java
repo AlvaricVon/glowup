@@ -196,7 +196,8 @@ FragmentActivity fa = (FragmentActivity) activity;
 
     @PluginMethod
     public void playAdhan(PluginCall call) {
-        AdhanPlayer.play(getContext());
+        boolean loop = call.getBoolean("loop", false);
+        AdhanPlayer.play(getContext(), loop);
         call.resolve();
     }
 

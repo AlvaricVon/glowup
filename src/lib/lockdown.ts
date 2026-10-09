@@ -19,7 +19,7 @@ interface LockdownPlugin {
   activateNightLock(): Promise<void>;
   deactivateNightLock(): Promise<void>;
   scheduleNightAlarm(): Promise<void>;
-  playAdhan(): Promise<void>;
+  playAdhan(opts: { loop: boolean }): Promise<void>;
   stopAdhan(): Promise<void>;
   schedulePrayerAlarms(opts: { alarms: { t: number; name: string }[] }): Promise<void>;
   addListener(eventName: 'unlocked', listenerFunc: () => void): Promise<PluginListenerHandle>;
@@ -181,10 +181,10 @@ export async function nativeScheduleNightAlarm(): Promise<void> {
   }
 }
 
-export async function nativePlayAdhan(): Promise<void> {
+export async function nativePlayAdhan(loop = false): Promise<void> {
   if (!isNative()) return;
   try {
-    await Native.playAdhan();
+    await Native.playAdhan({ loop });
   } catch {
     // noop
   }

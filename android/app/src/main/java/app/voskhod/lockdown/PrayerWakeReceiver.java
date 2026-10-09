@@ -19,7 +19,8 @@ public class PrayerWakeReceiver extends BroadcastReceiver {
             PrayerWakeScheduler.rescheduleAfterBoot(context);
             return;
         }
-        if (!PrayerWakeScheduler.ACTION_PRAYER.equals(action)) return;
+        if (!PrayerWakeScheduler.ACTION_PRAYER.equals(action)
+                && !PrayerWakeScheduler.ACTION_PRAYER_LOCK.equals(action)) return;
 
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock wl = null;
@@ -28,17 +29,28 @@ public class PrayerWakeReceiver extends BroadcastReceiver {
             wl.acquire(20000);
         }
         try {
+            String name = intent.getStringExtra("prayerName");
+            if (name == null || name.isEmpty()) name = "Waktunya Sholat";
+            boolean subuh = "Subuh".equalsIgnoreCase(name);
+
+            if (PrayerWakeScheduler.ACTION_PRAYER.equals(action)) {
+                // Stage 1: adhan only. No lock, no overlay — user keeps using apps.
+                AdhanPlayer.play(context, subuh);
+                return;
+            }
+
+            // Stage 2: engage the actual prayer lock screen (kiosk).
             LockdownManager lm = LockdownManager.from(context);
             if (lm.isDeviceOwner()) {
                 lm.applyLockTaskWhitelist();
             }
-            String name = intent.getStringExtra("prayerName");
-            if (name == null || name.isEmpty()) name = "Waktunya Sholat";
+            if (subuh && !AdhanPlayer.isPlaying()) {
+                AdhanPlayer.play(context, true);
+            }
             Intent i = new Intent(context, LockScreenActivity.class);
             i.putExtra(LockScreenActivity.EXTRA_PRAYER_NAME, name);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             context.startActivity(i);
-            AdhanPlayer.play(context);
         } catch (Exception ignored) {
         } finally {
             if (wl != null && wl.isHeld()) {

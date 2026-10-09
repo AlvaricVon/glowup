@@ -15,6 +15,12 @@ const PRAYER_HABIT: Record<PrayerKey, string> = {
   isya: 'isya-masjid',
 };
 
+/**
+ * Adhan plays once at the prayer time; the lock screen only engages after this
+ * grace period so users aren't yanked out of whatever they're doing.
+ */
+const PRAYER_LOCK_GRACE_MS = 10 * 60 * 1000;
+
 export interface ActiveLock {
   prayerKey: PrayerKey;
   prayer: PrayerTime;
@@ -65,6 +71,7 @@ export function usePrayerGate() {
   const method = usePrayerSettings((s) => s.method);
   const lockEnabled = usePrayerSettings((s) => s.lockEnabled);
   const autoCheckHabits = usePrayerSettings((s) => s.autoCheckHabits);
+  const ringedRef = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -219,11 +226,22 @@ export function usePrayerGate() {
       const key = today + '::' + pr.key;
       if (isConfirmed(log, key)) continue;
       if (now >= pr.time) {
-        if (isNative()) {
-          void nativePlayAdhan();
-        } else {
-          void unlockAudio().then(() => playAdhan()).catch(() => undefined);
+        const graceEnd = pr.time.getTime() + PRAYER_LOCK_GRACE_MS;
+        const inGrace = now.getTime() < graceEnd;
+        if (inGrace) {
+          // Stage 1: adhan only, no lock yet. Plays once (loops for subuh).
+          if (!ringedRef.current[key]) {
+            ringedRef.current[key] = true;
+            if (isNative()) {
+              void nativePlayAdhan(pr.key === 'subuh');
+            } else {
+              void unlockAudio().then(() => playAdhan(pr.key === 'subuh')).catch(() => undefined);
+            }
+          }
+          if (activeLock) setActiveLock(null);
+          return;
         }
+        // Stage 2: grace over, still unconfirmed → engage the lock.
         setActiveLock((cur) =>
           cur && cur.prayerKey === pr.key ? cur : { prayerKey: pr.key, prayer: pr, startedAt: Date.now() },
         );

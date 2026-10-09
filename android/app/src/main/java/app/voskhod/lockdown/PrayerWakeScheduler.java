@@ -18,10 +18,15 @@ import org.json.JSONObject;
 public class PrayerWakeScheduler {
 
     public static final String ACTION_PRAYER = "app.voskhod.action.PRAYER";
+    public static final String ACTION_PRAYER_LOCK = "app.voskhod.action.PRAYER_LOCK";
+
+    /** Grace after the adhan starts before the prayer lock screen kiosk engages. */
+    public static final long GRACE_MS = 10L * 60 * 1000;
 
     private static final String PREFS = "glowup-prayer-alarms";
     private static final String KEY_TIMES = "times";
     private static final int REQ_BASE = 5000;
+    private static final int REQ_GRACE_BASE = 5100;
     private static final int MAX_ALARMS = 20;
 
     /** alarms = [{ t: epochMillis, name: "Dzuhur" }] (only future ones are scheduled). */
@@ -29,15 +34,7 @@ public class PrayerWakeScheduler {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
 
-        for (int i = 0; i < MAX_ALARMS; i++) {
-            Intent cancelIntent = new Intent(ctx, PrayerWakeReceiver.class).setAction(ACTION_PRAYER);
-            PendingIntent pi = PendingIntent.getBroadcast(ctx, REQ_BASE + i, cancelIntent,
-                    PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
-            if (pi != null) {
-                am.cancel(pi);
-                pi.cancel();
-            }
-        }
+        cancelAll(ctx);
 
         long now = System.currentTimeMillis();
         int idx = 0;
@@ -48,15 +45,28 @@ public class PrayerWakeScheduler {
                 String name = o.optString("name", "");
                 if (t <= now + 30_000L) continue;
 
-                Intent intent = new Intent(ctx, PrayerWakeReceiver.class).setAction(ACTION_PRAYER);
-                intent.putExtra("prayerName", name);
-                PendingIntent pi = PendingIntent.getBroadcast(ctx, REQ_BASE + idx, intent,
+                // Stage 1: at prayer time, only the adhan rings (no lock yet).
+                Intent adhan = new Intent(ctx, PrayerWakeReceiver.class).setAction(ACTION_PRAYER);
+                adhan.putExtra("prayerName", name);
+                PendingIntent piAdhan = PendingIntent.getBroadcast(ctx, REQ_BASE + idx, adhan,
                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
                 try {
-                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, pi);
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, piAdhan);
                 } catch (SecurityException se) {
-                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, pi);
+                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t, piAdhan);
                 }
+
+                // Stage 2: after the grace period, engage the prayer lock screen.
+                Intent lock = new Intent(ctx, PrayerWakeReceiver.class).setAction(ACTION_PRAYER_LOCK);
+                lock.putExtra("prayerName", name);
+                PendingIntent piLock = PendingIntent.getBroadcast(ctx, REQ_GRACE_BASE + idx, lock,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                try {
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t + GRACE_MS, piLock);
+                } catch (SecurityException se) {
+                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t + GRACE_MS, piLock);
+                }
+
                 idx++;
             } catch (Exception ignored) {
             }
@@ -64,6 +74,27 @@ public class PrayerWakeScheduler {
 
         SharedPreferences prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_TIMES, alarms.toString()).apply();
+    }
+
+    public static void cancelAll(Context ctx) {
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        for (int i = 0; i < MAX_ALARMS; i++) {
+            Intent adhan = new Intent(ctx, PrayerWakeReceiver.class).setAction(ACTION_PRAYER);
+            PendingIntent pi = PendingIntent.getBroadcast(ctx, REQ_BASE + i, adhan,
+                    PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
+            if (pi != null) {
+                am.cancel(pi);
+                pi.cancel();
+            }
+            Intent lock = new Intent(ctx, PrayerWakeReceiver.class).setAction(ACTION_PRAYER_LOCK);
+            PendingIntent p2 = PendingIntent.getBroadcast(ctx, REQ_GRACE_BASE + i, lock,
+                    PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
+            if (p2 != null) {
+                am.cancel(p2);
+                p2.cancel();
+            }
+        }
     }
 
     public static void rescheduleAfterBoot(Context ctx) {

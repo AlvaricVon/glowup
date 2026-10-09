@@ -20,7 +20,7 @@ public class AdhanPlayer {
     private static final String TAG = "AdhanPlayer";
     private static MediaPlayer player;
 
-    public static synchronized void play(Context context) {
+    public static synchronized void play(Context context, boolean loop) {
         stop();
         if (context == null) return;
         try {
@@ -37,7 +37,7 @@ public class AdhanPlayer {
                     .build());
             mp.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK);
             mp.setDataSource(context, Uri.parse("android.resource://" + context.getPackageName() + "/" + R.raw.adhan));
-            mp.setLooping(true);
+            mp.setLooping(loop);
             mp.setOnPreparedListener(MediaPlayer::start);
             mp.setOnErrorListener((p, what, extra) -> {
                 Log.w(TAG, "adhan play error what=" + what + " extra=" + extra);
@@ -49,6 +49,14 @@ public class AdhanPlayer {
             player = mp;
         } catch (Exception e) {
             Log.w(TAG, "adhan play failed", e);
+        }
+    }
+
+    public static synchronized boolean isPlaying() {
+        try {
+            return player != null && player.isPlaying();
+        } catch (Exception e) {
+            return false;
         }
     }
 

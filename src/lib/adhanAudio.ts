@@ -25,14 +25,14 @@ export async function unlockAudio(): Promise<void> {
   }
 }
 
-export async function playAdhan(): Promise<void> {
+export async function playAdhan(loop = false): Promise<void> {
   const a = getAudio();
   try {
     if (a.src.indexOf('/adhan/adhan.mp3') === -1 && a.src.indexOf('/adhan/adan.ogg') === -1) {
       a.src = '/adhan/adhan.mp3';
     }
     a.currentTime = 0;
-    a.loop = true;
+    a.loop = loop;
     await a.play();
   } catch {}
 }
