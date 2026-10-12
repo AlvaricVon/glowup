@@ -1,12 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BottomNav, type Tab } from './components/BottomNav';
-import { IntroQuote } from './components/IntroQuote';
 import { SholatGate } from './components/SholatGate';
 import { useDayRollover } from './hooks/useDayRollover';
 import { useNightLock } from './hooks/useNightLock';
 import { useTheme } from './hooks/useTheme';
 import { startReminderLoop, stopReminderLoop } from './lib/notifications';
-import { INTRO_QUOTE } from './lib/quotes';
 import { Home } from './pages/Home';
 import { Onboarding } from './pages/Onboarding';
 import { Settings } from './pages/Settings';
@@ -19,8 +17,6 @@ export default function App() {
   const loading = useAppStore((s) => s.loading);
   const hydrate = useAppStore((s) => s.hydrate);
   const [tab, setTab] = useState<Tab>('today');
-  const [showIntro, setShowIntro] = useState(true);
-  const closeIntro = useCallback(() => setShowIntro(false), []);
 
 useTheme();
   useDayRollover();
@@ -60,8 +56,7 @@ useTheme();
         {tab === 'tools' && <Tools />}
         {tab === 'settings' && <Settings />}
       </main>
-      <BottomNav active={tab} onChange={setTab} />
-      {showIntro && <IntroQuote quote={INTRO_QUOTE} onClose={closeIntro} />}
+<BottomNav active={tab} onChange={setTab} />
     </div>
   );
 }

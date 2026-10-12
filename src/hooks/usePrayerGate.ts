@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { playAdhan, stopAdhan, unlockAudio } from '../lib/adhanAudio';
 import { PRAYER_NAMES, calculateDayPrayers, type PrayerKey, type PrayerTime } from '../lib/prayer';
-import { getCachedCoords, getTimeZone, requestCoords, type Coords } from '../lib/location';
+import { getCachedCoords, isCoordsStale, requestCoords, type Coords } from '../lib/location';
 import { enterLockdown, exitLockdown, isNative, nativePlayAdhan, nativeSchedulePrayerAlarms, nativeStopAdhan, onNativeUnlock, showNativeLockScreen } from '../lib/lockdown';
 import { getNightLockState } from '../lib/nightLock';
 import { readPrayerSettings, usePrayerSettings } from '../lib/prayerSettings';
@@ -14,12 +14,6 @@ const PRAYER_HABIT: Record<PrayerKey, string> = {
   maghrib: 'maghrib-masjid',
   isya: 'isya-masjid',
 };
-
-/**
- * Adhan plays once at the prayer time; the lock screen only engages after this
- * grace period so users aren't yanked out of whatever they're doing.
- */
-const PRAYER_LOCK_GRACE_MS = 10 * 60 * 1000;
 
 export interface ActiveLock {
   prayerKey: PrayerKey;
@@ -84,8 +78,7 @@ export function usePrayerGate() {
       if (cancelled || !navigator.geolocation) return;
       try {
         const cached = getCachedCoords();
-        const tz = getTimeZone();
-        if (cached && cached.tz === tz) return;
+        if (!isCoordsStale(cached, 6 * 60 * 60 * 1000)) return;
         const c = await requestCoords();
         if (!cancelled) setCoords(c);
       } catch {
@@ -226,22 +219,15 @@ export function usePrayerGate() {
       const key = today + '::' + pr.key;
       if (isConfirmed(log, key)) continue;
       if (now >= pr.time) {
-        const graceEnd = pr.time.getTime() + PRAYER_LOCK_GRACE_MS;
-        const inGrace = now.getTime() < graceEnd;
-        if (inGrace) {
-          // Stage 1: adhan only, no lock yet. Plays once (loops for subuh).
-          if (!ringedRef.current[key]) {
-            ringedRef.current[key] = true;
-            if (isNative()) {
-              void nativePlayAdhan(pr.key === 'subuh');
-            } else {
-              void unlockAudio().then(() => playAdhan(pr.key === 'subuh')).catch(() => undefined);
-            }
+        // Adhan plays once (loops only for Subuh) + the lock engages together.
+        if (!ringedRef.current[key]) {
+          ringedRef.current[key] = true;
+          if (isNative()) {
+            void nativePlayAdhan(pr.key === 'subuh');
+          } else {
+            void unlockAudio().then(() => playAdhan(pr.key === 'subuh')).catch(() => undefined);
           }
-          if (activeLock) setActiveLock(null);
-          return;
         }
-        // Stage 2: grace over, still unconfirmed → engage the lock.
         setActiveLock((cur) =>
           cur && cur.prayerKey === pr.key ? cur : { prayerKey: pr.key, prayer: pr, startedAt: Date.now() },
         );
