@@ -6,6 +6,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.os.Build;
 
 import java.util.Arrays;
 
@@ -60,9 +63,63 @@ public class LockdownManager {
     public void applyLockTaskWhitelist() {
         if (dpm == null || !isDeviceOwner()) return;
         try {
-            dpm.setLockTaskPackages(adminComponent, getWhitelist());
+            dpm.setLockTaskPackages(adminComponent, getLockTaskPackages());
         } catch (Exception ignored) {
         }
+    }
+
+    /**
+     * Whitelist plus the default launcher, so the Home button (when enabled via
+     * LOCK_TASK_FEATURE_HOME) actually lands somewhere and the user is never
+     * trapped inside a single allowlisted app.
+     */
+    private String[] getLockTaskPackages() {
+        String[] base = getWhitelist();
+        String home = getDefaultHomePackage();
+        if (home == null || home.isEmpty()) return base;
+        for (String p : base) {
+            if (home.equals(p)) return base;
+        }
+        String[] merged = Arrays.copyOf(base, base.length + 1);
+        merged[base.length] = home;
+        return merged;
+    }
+
+    private String getDefaultHomePackage() {
+        try {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            ResolveInfo ri = context.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
+            if (ri != null && ri.activityInfo != null) return ri.activityInfo.packageName;
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    /**
+     * Enable the keyguard plus Home/Overview while in lock task mode (API 28+).
+     * Without this, lock task disables the keyguard entirely — so turning the
+     * screen on jumps straight into the last app (no lock screen) and there is no
+     * way back home. Enabling these keeps the phone usable but still allowlisted.
+     *
+     * @param features extra LOCK_TASK_FEATURE_* bits beyond KEYGUARD.
+     */
+    public void applyLockTaskFeatures(int features) {
+        if (dpm == null || !isDeviceOwner()) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return;
+        int flags = DevicePolicyManager.LOCK_TASK_FEATURE_KEYGUARD | features;
+        try {
+            dpm.setLockTaskFeatures(adminComponent, flags);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static final int FULL_FEATURES =
+            DevicePolicyManager.LOCK_TASK_FEATURE_HOME | DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
+
+    /** Kiosk mode: keyguard only (Home disabled so the user can't dodge the prayer). */
+    public void applyKioskFeatures() {
+        applyLockTaskFeatures(0);
     }
 
     /**
@@ -89,6 +146,7 @@ public class LockdownManager {
 
     public void enterLockdown(Activity activity) {
         applyLockTaskWhitelist();
+        applyLockTaskFeatures(FULL_FEATURES);
         if (isDeviceOwner()) {
             try {
                 activity.startLockTask();

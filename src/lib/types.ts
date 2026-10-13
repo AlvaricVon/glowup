@@ -20,6 +20,8 @@ export interface HabitEntry {
   completed: boolean;
   /** ISO timestamp when the habit was last toggled to completed. */
   timestamp: string | null;
+  /** Prayer intentionally skipped (triple-tap): counts as done for gating but must be covered by Sholat Taubat. */
+  skipped?: boolean;
 }
 
 export interface DayEntry {

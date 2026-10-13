@@ -6,7 +6,14 @@ import { ProgressBar } from '../components/ProgressBar';
 import { PrayerPanel } from '../components/PrayerPanel';
 import { QuoteCard } from '../components/QuoteCard';
 import { StreakCounter } from '../components/StreakCounter';
-import { HABITS, PERIOD_LABELS, PERIOD_ORDER, PRAYER_HABIT_IDS, TAUBAT_HABIT_ID } from '../lib/habits';
+import {
+  HABITS,
+  HABITS_BY_ID,
+  PERIOD_LABELS,
+  PERIOD_ORDER,
+  PRAYER_HABIT_IDS,
+  TAUBAT_HABIT_ID,
+} from '../lib/habits';
 import { quoteForDate } from '../lib/quotes';
 import { computeStreak } from '../lib/streak';
 import { useAppStore } from '../store/useAppStore';
@@ -24,6 +31,7 @@ export function Home() {
   const meta = useAppStore((s) => s.meta);
   const history = useAppStore((s) => s.history);
   const toggleHabit = useAppStore((s) => s.toggleHabit);
+  const markHabitSkipped = useAppStore((s) => s.markHabitSkipped);
 
   // Compute streak via useMemo to avoid Zustand v5 infinite-loop:
   // selectors that return new objects on each call cause useSyncExternalStore
@@ -40,24 +48,30 @@ export function Home() {
   const [prayerPanelOpen, setPrayerPanelOpen] = useState(false);
   const [confettiOrigin, setConfettiOrigin] = useState<{ x: number; y: number } | undefined>();
   const [taubatConfirmOpen, setTaubatConfirmOpen] = useState(false);
+  const [skipTarget, setSkipTarget] = useState<string | null>(null);
 
   // Sholat Taubat <-> 5 sholat wajib saling eksklusif:
-  // - semua sholat wajib kelar  -> taubat kekunci (gak perlu tobat).
-  // - taubat dicentang          -> sholat wajib yang belum kelar kekunci (yang sengaja di-skip).
+  // - sholat yang SENGAJA di-skip (3 tap) -> kelar tapi kekunci + wajib taubat.
+  // - semua sholat wajib kelar beneran   -> taubat kekunci (gak perlu tobat).
+  // - taubat dicentang                   -> sholat wajib yang belum kelar kekunci.
   const taubatDone = today?.habits?.[TAUBAT_HABIT_ID]?.completed ?? false;
   const prayersAllDone = PRAYER_HABIT_IDS.every((id) => today?.habits?.[id]?.completed);
+  const anyPrayerSkipped = PRAYER_HABIT_IDS.some((id) => today?.habits?.[id]?.skipped);
   const disabledIds = useMemo(() => {
     if (!today) return [] as string[];
     const out: string[] = [];
+    for (const id of PRAYER_HABIT_IDS) {
+      if (today.habits[id]?.skipped) out.push(id);
+    }
     if (taubatDone) {
       for (const id of PRAYER_HABIT_IDS) {
         if (!today.habits[id]?.completed) out.push(id);
       }
-    } else if (prayersAllDone) {
+    } else if (prayersAllDone && !anyPrayerSkipped) {
       out.push(TAUBAT_HABIT_ID);
     }
     return out;
-  }, [today, taubatDone, prayersAllDone]);
+  }, [today, taubatDone, prayersAllDone, anyPrayerSkipped]);
 
   const groups = useMemo(() => {
     if (!today) return [];
@@ -109,6 +123,13 @@ export function Home() {
     applyToggle(id, evt);
   };
 
+  // 3 tap cepet di checkbox sholat = sengaja skip (wajib taubat).
+  const handleHabitTripleClick = (id: string) => {
+    if (disabledIds.includes(id)) return;
+    if (today.habits[id]?.completed) return;
+    setSkipTarget(id);
+  };
+
   return (
     <div className="mx-auto max-w-lg space-y-4 px-4 pb-28 pt-6">
       <header className="space-y-1">
@@ -136,6 +157,8 @@ export function Home() {
             entries={today.habits}
             onToggle={handleHabitToggle}
             disabledIds={disabledIds}
+            tripleClickHabitIds={[...PRAYER_HABIT_IDS]}
+            onHabitTripleClick={handleHabitTripleClick}
             longPressHabitId="subuh-masjid"
             onHabitLongPress={() => setPrayerPanelOpen(true)}
           />
@@ -157,6 +180,22 @@ export function Home() {
           applyToggle(TAUBAT_HABIT_ID);
         }}
         onCancel={() => setTaubatConfirmOpen(false)}
+      />
+
+      <ConfirmModal
+        open={skipTarget !== null}
+        title="Sengaja skip sholat ini?"
+        body={`Konfirmasi: kamu SENGAJA ninggalin ${
+          skipTarget ? HABITS_BY_ID[skipTarget]?.label ?? 'sholat ini' : 'sholat ini'
+        } hari ini. Check-nya bakal dianggap kelar (biar periode pagi/siang/sore bisa lanjut & HP kebuka lagi), TAPI kamu WAJIB Sholat Taubat buat nutupnya. Begitu dicentang, check ini langsung KEKUNCI — gak bisa diubah lagi. Yakin?`}
+        confirmLabel="Ya, gw sengaja skip"
+        cancelLabel="Batal"
+        onConfirm={() => {
+          const t = skipTarget;
+          setSkipTarget(null);
+          if (t) void markHabitSkipped(t);
+        }}
+        onCancel={() => setSkipTarget(null)}
       />
 
       <ConfettiBurst trigger={confettiKey} origin={confettiOrigin} />

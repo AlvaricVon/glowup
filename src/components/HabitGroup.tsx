@@ -13,6 +13,9 @@ interface Props {
   onHabitLongPress?: (id: string, evt: React.PointerEvent) => void;
   /** Habit ids locked by a rule (cannot be toggled). */
   disabledIds?: string[];
+  /** Habit ids where 3 quick taps trigger onHabitTripleClick instead of toggling. */
+  tripleClickHabitIds?: string[];
+  onHabitTripleClick?: (id: string, evt: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const ICONS: Record<Period, typeof Sun> = {
@@ -34,11 +37,14 @@ export function HabitGroup({
   longPressHabitId,
   onHabitLongPress,
   disabledIds,
+  tripleClickHabitIds,
+  onHabitTripleClick,
 }: Props) {
   if (habits.length === 0) return null;
   const Icon = ICONS[period];
   const done = habits.filter((h) => entries[h.id]?.completed).length;
   const disabledSet = disabledIds && disabledIds.length > 0 ? new Set(disabledIds) : null;
+  const tripleSet = tripleClickHabitIds && tripleClickHabitIds.length > 0 ? new Set(tripleClickHabitIds) : null;
   return (
     <section className="animate-slide-up">
       <header className="mb-2 flex items-center justify-between px-1">
@@ -63,6 +69,11 @@ export function HabitGroup({
             onLongPress={
               longPressHabitId && h.id === longPressHabitId && onHabitLongPress
                 ? (e) => onHabitLongPress(h.id, e)
+                : undefined
+            }
+            onTripleClick={
+              tripleSet && tripleSet.has(h.id) && onHabitTripleClick
+                ? (e) => onHabitTripleClick(h.id, e)
                 : undefined
             }
           />

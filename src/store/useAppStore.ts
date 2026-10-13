@@ -14,6 +14,7 @@ interface AppState {
   hydrate: () => Promise<void>;
   finishOnboarding: (name: string, notificationsEnabled: boolean) => Promise<void>;
   toggleHabit: (habitId: string) => Promise<void>;
+  markHabitSkipped: (habitId: string) => Promise<void>;
   toggleConditional: (key: ConditionalKey) => Promise<void>;
   updateMeta: (patch: Partial<AppMeta>) => Promise<void>;
   resetAll: () => Promise<void>;
@@ -110,6 +111,35 @@ export const useAppStore = create<AppState>((set, get) => ({
     history.sort((a, b) => a.date.localeCompare(b.date));
 
     // Update longest streak if applicable.
+    const meta = get().meta;
+    if (meta) {
+      const longest = computeLongestStreak(history);
+      if (longest > meta.longestStreak) {
+        const updated = { ...meta, longestStreak: longest };
+        await db.putMeta(updated);
+        set({ meta: updated });
+      }
+    }
+    set({ today: next, history });
+  },
+
+  async markHabitSkipped(habitId) {
+    const cur = get().today;
+    if (!cur) return;
+    const next: DayEntry = {
+      ...cur,
+      habits: {
+        ...cur.habits,
+        [habitId]: { completed: true, timestamp: new Date().toISOString(), skipped: true },
+      },
+    };
+    next.completionRate = calcCompletionRate(next);
+    await db.putDay(next);
+
+    const history = get().history.filter((d) => d.date !== next.date);
+    history.push(next);
+    history.sort((a, b) => a.date.localeCompare(b.date));
+
     const meta = get().meta;
     if (meta) {
       const longest = computeLongestStreak(history);

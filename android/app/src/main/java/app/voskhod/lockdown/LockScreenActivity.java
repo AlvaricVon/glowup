@@ -10,6 +10,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.Arrays;
+
 import app.voskhod.R;
 import app.voskhod.plugin.LockdownPlugin;
 
@@ -43,6 +45,9 @@ public class LockScreenActivity extends Activity {
         LockdownManager lm = LockdownManager.from(this);
         if (lm.isDeviceOwner()) {
             lm.applyLockTaskWhitelist();
+            // Kiosk: keep the keyguard on but disable Home so the user can't dodge
+            // the prayer by jumping to the launcher.
+            lm.applyKioskFeatures();
             try {
                 startLockTask();
             } catch (Exception ignored) {
@@ -71,8 +76,11 @@ public class LockScreenActivity extends Activity {
             AdhanPlayer.stop();
             LockdownPlugin.notifyUnlocked();
             // Bring the app back so the JS gate can re-engage and keep the phone
-            // locked while the period's habits are still unfinished.
-            if (dayGate) {
+            // locked while the period's habits are still unfinished. Also do it for
+            // maghrib/isya when a period gate is currently holding the lock, since
+            // stopping this kiosk also exits lock task mode device-wide.
+            boolean gateActive = Arrays.equals(lm.getWhitelist(), LockdownManager.NIGHT_WHITELIST);
+            if (dayGate || gateActive) {
                 try {
                     Intent i = new Intent(LockScreenActivity.this, app.voskhod.MainActivity.class);
                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
