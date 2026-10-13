@@ -11,6 +11,8 @@ interface Props {
   /** Habit id that opens a hidden panel when held. */
   longPressHabitId?: string;
   onHabitLongPress?: (id: string, evt: React.PointerEvent) => void;
+  /** Habit ids locked by a rule (cannot be toggled). */
+  disabledIds?: string[];
 }
 
 const ICONS: Record<Period, typeof Sun> = {
@@ -31,10 +33,12 @@ export function HabitGroup({
   onToggle,
   longPressHabitId,
   onHabitLongPress,
+  disabledIds,
 }: Props) {
   if (habits.length === 0) return null;
   const Icon = ICONS[period];
   const done = habits.filter((h) => entries[h.id]?.completed).length;
+  const disabledSet = disabledIds && disabledIds.length > 0 ? new Set(disabledIds) : null;
   return (
     <section className="animate-slide-up">
       <header className="mb-2 flex items-center justify-between px-1">
@@ -55,6 +59,7 @@ export function HabitGroup({
             def={h}
             entry={entries[h.id] ?? { completed: false, timestamp: null }}
             onToggle={(e) => onToggle(h.id, e)}
+            disabled={disabledSet ? disabledSet.has(h.id) : false}
             onLongPress={
               longPressHabitId && h.id === longPressHabitId && onHabitLongPress
                 ? (e) => onHabitLongPress(h.id, e)

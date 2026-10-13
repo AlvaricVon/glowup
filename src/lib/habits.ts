@@ -3,6 +3,18 @@ import type { HabitDef, Period } from './types';
 // Days: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
 const REST_DAYS = [0, 2, 3, 5, 6]; // Tuesday, Wednesday, Friday, Saturday, Sunday (Not Mon/Thu)
 
+/** The 5 daily wajib prayers. Sholat Taubat locks against these (mutual exclusion). */
+export const PRAYER_HABIT_IDS = [
+  'subuh-masjid',
+  'dzuhur-masjid',
+  'ashar-masjid',
+  'maghrib-masjid',
+  'isya-masjid',
+] as const;
+
+/** Pengganti sholat wajib yang sengaja ditinggalin. */
+export const TAUBAT_HABIT_ID = 'taubat';
+
 export const HABITS: HabitDef[] = [
   // Pagi
   { id: 'minum-pagi', label: 'Minum 2 gelas', description: 'Setelah bangun pagi', period: 'pagi', priority: 0.5 },
@@ -29,6 +41,14 @@ export const HABITS: HabitDef[] = [
   { id: 'maghrib-masjid', label: 'Sholat maghrib', period: 'malam', priority: 23 },
   { id: 'minum-maghrib', label: 'Minum 2 gelas', description: 'Setelah sholat maghrib', period: 'malam', priority: 23.5 },
   { id: 'isya-masjid', label: 'Sholat isya', period: 'malam', priority: 25 },
+  {
+    id: TAUBAT_HABIT_ID,
+    label: 'Sholat Taubat',
+    description:
+      'Cuma buat nutup sholat wajib yang SENGAJA ditinggalin — niat beneran tobat, bukan cari aman. Harus serius, gak main-main. Kalau 5 sholat wajib hari ini udah lengkap, ini gak perlu & gak bisa diisi.',
+    period: 'malam',
+    priority: 25.2,
+  },
   { id: 'minum-isya', label: 'Minum 2 gelas', description: 'Setelah sholat isya', period: 'malam', priority: 25.5 },
   { id: 'grooming-malam', label: 'Sikat gigi & Cuci Muka', description: 'Sebelum tidur', period: 'malam', priority: 28 },
   {

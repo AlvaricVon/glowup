@@ -10,9 +10,11 @@ interface Props {
   entry: HabitEntry;
   onToggle: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onLongPress?: (e: React.PointerEvent) => void;
+  /** Locked by a rule (e.g. sholat taubat mutual exclusion) — gak bisa di-toggle. */
+  disabled?: boolean;
 }
 
-export function HabitCheckbox({ def, entry, onToggle, onLongPress }: Props) {
+export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = false }: Props) {
   const checked = entry.completed;
   const suppressClickRef = useRef(false);
   const longPress = useLongPress(
@@ -26,20 +28,25 @@ export function HabitCheckbox({ def, entry, onToggle, onLongPress }: Props) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={(e) => {
+        if (disabled) return;
         if (suppressClickRef.current) {
           suppressClickRef.current = false;
           return;
         }
         onToggle(e);
       }}
-      {...(onLongPress ? longPress : {})}
+      {...(onLongPress && !disabled ? longPress : {})}
       className={`group flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition-all active:scale-[0.99] ${
-        checked
-          ? 'border-brand-500/30 bg-brand-50/70 dark:border-brand-500/30 dark:bg-brand-500/10'
-          : 'border-neutral-200/80 bg-white hover:border-neutral-300 dark:border-neutral-800/80 dark:bg-neutral-900/60 dark:hover:border-neutral-700'
+        disabled
+          ? 'cursor-not-allowed border-neutral-200/60 bg-neutral-100/60 opacity-50 dark:border-neutral-800/50 dark:bg-neutral-900/40'
+          : checked
+            ? 'border-brand-500/30 bg-brand-50/70 dark:border-brand-500/30 dark:bg-brand-500/10'
+            : 'border-neutral-200/80 bg-white hover:border-neutral-300 dark:border-neutral-800/80 dark:bg-neutral-900/60 dark:hover:border-neutral-700'
       }`}
       aria-pressed={checked}
+      aria-disabled={disabled}
     >
       <span
         className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-all ${
