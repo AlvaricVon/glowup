@@ -1,10 +1,15 @@
 /**
- * Kunci biometrik Vault pakai WebAuthn (sidik jari / wajah / PIN perangkat).
- * Client-only, tanpa server: yang disimpan cuma credential ID di localStorage.
- * Catatan: WebAuthn butuh secure context (HTTPS atau localhost).
+ * Kunci biometrik Vault pakai WebAuthn (sidik jari / wajah / PIN perangkat) di browser
+ * yang mendukungnya, dengan fallback BiometricPrompt native (plugin Lockdown) di
+ * Capacitor — dipakai pas WebView-nya gak punya WebAuthn (PublicKeyCredential).
+ * Client-only, tanpa server.
  */
 
+import { isNative, nativeAuthenticate } from './lockdown';
+
 const CRED_KEY = 'voskhod-vault-cred';
+/** Signal bahwa kunci biometrik pakai jalur native (bukan WebAuthn). */
+export const NATIVE_CRED_ID = 'native';
 
 export function isWebAuthnSupported(): boolean {
   return (
@@ -18,7 +23,10 @@ export function isWebAuthnSupported(): boolean {
 /** True kalau perangkat punya sensor biometrik platform (sidik jari / wajah). */
 export async function isPlatformAuthAvailable(): Promise<boolean> {
   try {
-    if (!isWebAuthnSupported()) return false;
+    if (!isWebAuthnSupported()) {
+      // WebView tanpa WebAuthn: native BiometricPrompt tetap tersedia di Capacitor.
+      return isNative();
+    }
     const Pkc = window.PublicKeyCredential;
     if (typeof Pkc.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return false;
     return await Pkc.isUserVerifyingPlatformAuthenticatorAvailable();
@@ -97,9 +105,18 @@ function friendlyError(e: unknown, fallback: string): Error {
 /**
  * Registrasi biometrik pertama kali. Memicu prompt sidik jari / wajah / PIN.
  * Mengembalikan credential ID sekaligus menyimpannya di localStorage.
+ * Fallback ke BiometricPrompt native kalau WebAuthn gak didukung WebView.
  */
 export async function registerBiometric(): Promise<string> {
-  if (!isWebAuthnSupported()) throw new Error('Browser ini tidak mendukung biometrik (WebAuthn).');
+  if (!isWebAuthnSupported()) {
+    if (!isNative()) throw new Error('Browser ini tidak mendukung kunci biometrik (WebAuthn).');
+    const r = await nativeAuthenticate('Daftar kunci biometrik untuk Vault');
+    if (!r) throw new Error('Gagal terhubung ke perangkat.');
+    if (r.needEnroll) throw new Error('Daftar sidik jari / wajah dulu di pengaturan HP, terus coba lagi.');
+    if (!r.success) throw new Error(r.cancelled ? 'Pendaftaran dibatalkan.' : 'Pendaftaran biometrik gagal.');
+    window.localStorage.setItem(CRED_KEY, NATIVE_CRED_ID);
+    return NATIVE_CRED_ID;
+  }
   if (!isSecureContext()) throw new Error('Biometrik butuh konteks aman — buka lewat HTTPS atau localhost.');
   try {
     const cred = (await navigator.credentials.create({
@@ -127,7 +144,15 @@ export async function registerBiometric(): Promise<string> {
 
 /** Verifikasi biometrik untuk kredensial yang tersimpan. */
 export async function authenticateBiometric(credId: string): Promise<void> {
-  if (!isWebAuthnSupported()) throw new Error('Browser ini tidak mendukung biometrik (WebAuthn).');
+  if (isNative() && credId === NATIVE_CRED_ID) {
+    const r = await nativeAuthenticate('Buka Vault');
+    if (!r?.success) {
+      if (r?.needEnroll) throw new Error('Daftar sidik jari / wajah dulu di pengaturan HP.');
+      throw new Error(r?.cancelled ? 'Verifikasi dibatalkan. Coba lagi ya.' : 'Verifikasi gagal. Coba lagi ya.');
+    }
+    return;
+  }
+  if (!isWebAuthnSupported()) throw new Error('Browser ini tidak mendukung kunci biometrik (WebAuthn).');
   try {
     const cred = (await navigator.credentials.get({
       publicKey: {

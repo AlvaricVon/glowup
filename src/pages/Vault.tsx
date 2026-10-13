@@ -40,6 +40,7 @@ import {
   isWebAuthnSupported,
   registerBiometric,
 } from '../lib/webauthn';
+import { isNative } from '../lib/lockdown';
 
 const STORAGE_KEY = 'glowup-vault';
 
@@ -180,7 +181,7 @@ export function Vault({ active = true }: { active?: boolean }) {
   const [gateMsg, setGateMsg] = useState<string | null>(null);
   const [bioCapable, setBioCapable] = useState<boolean | null>(null);
   const secureOk = isSecureContext();
-  const webAuthnOk = isWebAuthnSupported();
+  const webAuthnOk = isWebAuthnSupported() || isNative();
 
   const refreshGen = () => {
     setGenPool(generatePassword({ length: genLen, upper: genUpper, numbers: genNums, symbols: genSyms }));
@@ -332,6 +333,11 @@ export function Vault({ active = true }: { active?: boolean }) {
       const id = await registerBiometric();
       setCredId(id);
       flash('Biometrik aktif ✓');
+      // Native: prompt barusan udah verifikasi — gak perlu scan dua kali.
+      if (isNative() && !isWebAuthnSupported()) {
+        setUnlocked(true);
+        return;
+      }
       // Verifikasi sekali biar yakin, terus langsung masuk.
       await authenticateBiometric(id);
       setUnlocked(true);

@@ -81,7 +81,7 @@ export const HABITS: HabitDef[] = [
     id: 'no-overeat',
     label: 'Makan secukupnya',
     description:
-      'Kunyah makanan 32x dulu sebelum ditelan, porsi secukupnya & gak overeat. Kalo makan nasi maksimal 2 centong aja',
+      'Makan cuma pas laper, minimal sampai perut gak keroncongan lagi. Kunyah makanan 32x dulu sebelum ditelan, porsi secukupnya & gak overeat. Kalo makan nasi maksimal 2 centong aja',
     period: 'limit',
     priority: 30,
   },
