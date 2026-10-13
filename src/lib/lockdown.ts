@@ -18,6 +18,7 @@ interface LockdownPlugin {
   openBiometricEnrollment(): Promise<void>;
   activateNightLock(): Promise<void>;
   deactivateNightLock(): Promise<void>;
+  setAppLocked(opts: { package: string; locked: boolean }): Promise<{ ok: boolean }>;
   scheduleNightAlarm(): Promise<void>;
   playAdhan(opts: { loop: boolean }): Promise<void>;
   stopAdhan(): Promise<void>;
@@ -78,7 +79,7 @@ export async function onNativeUnlock(cb: () => void): Promise<void> {
   }
 }
 
-const DEFAULT_WHITELIST = ['app.voskhod', 'com.whatsapp'];
+const DEFAULT_WHITELIST = ['app.voskhod', 'com.whatsapp', 'com.andi.alquran.id'];
 
 export async function nativeGetWhitelist(): Promise<string[]> {
   if (!isNative()) return [...DEFAULT_WHITELIST];
@@ -109,6 +110,7 @@ declare global {
       isDeviceOwner?: () => Promise<boolean>;
       getWhitelist?: () => Promise<string[]>;
       authenticate?: (reason: string) => Promise<NativeAuthResult | null>;
+      setAppLocked?: (pkg: string, locked: boolean) => Promise<boolean>;
       nightApply?: () => Promise<boolean>;
       nightRelease?: () => Promise<boolean>;
       nightCompleteAllPagi?: () => Promise<number>;
@@ -172,6 +174,16 @@ export async function nativeDeactivateNightLock(): Promise<boolean> {
   }
 }
 
+export async function nativeSetAppLocked(pkg: string, locked: boolean): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    const r = await Native.setAppLocked({ package: pkg, locked });
+    return !!r.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function nativeScheduleNightAlarm(): Promise<void> {
   if (!isNative()) return;
   try {
@@ -216,6 +228,7 @@ if (isNative()) {
     isDeviceOwner: nativeIsDeviceOwner,
     getWhitelist: nativeGetWhitelist,
     authenticate: nativeAuthenticate,
+    setAppLocked: nativeSetAppLocked,
     playAdhan: nativePlayAdhan,
     stopAdhan: nativeStopAdhan,
   };

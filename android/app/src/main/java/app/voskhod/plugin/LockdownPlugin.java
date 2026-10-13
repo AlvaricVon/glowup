@@ -167,6 +167,17 @@ FragmentActivity fa = (FragmentActivity) activity;
     }
 
     @PluginMethod
+    public void setAppLocked(PluginCall call) {
+        String pkg = call.getString("package");
+        boolean locked = call.getBoolean("locked", false);
+        if (pkg == null) { call.reject("package required"); return; }
+        boolean ok = LockdownManager.from(getContext()).setAppSuspended(pkg, locked);
+        JSObject ret = new JSObject();
+        ret.put("ok", ok);
+        call.resolve(ret);
+    }
+
+    @PluginMethod
     public void scheduleNightAlarm(PluginCall call) {
         NightWakeScheduler.scheduleNext(getContext());
         call.resolve();

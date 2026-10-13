@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BottomNav, type Tab } from './components/BottomNav';
 import { SholatGate } from './components/SholatGate';
 import { useDayRollover } from './hooks/useDayRollover';
+import { useMlLock } from './hooks/useMlLock';
 import { useNightLock } from './hooks/useNightLock';
 import { useTheme } from './hooks/useTheme';
 import { startReminderLoop, stopReminderLoop } from './lib/notifications';
@@ -21,6 +22,7 @@ export default function App() {
 useTheme();
   useDayRollover();
   useNightLock();
+  useMlLock();
 
   useEffect(() => {
     void hydrate();

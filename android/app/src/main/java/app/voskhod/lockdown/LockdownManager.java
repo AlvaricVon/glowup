@@ -22,7 +22,8 @@ public class LockdownManager {
 
     public static final String[] DEFAULT_WHITELIST = new String[] {
         "app.voskhod",
-        "com.whatsapp"
+        "com.whatsapp",
+        "com.andi.alquran.id"
     };
 
     public static final String[] NIGHT_WHITELIST = new String[] {
@@ -159,6 +160,22 @@ public class LockdownManager {
         try {
             activity.stopLockTask();
         } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Suspend/unsuspend a single app (device owner, API 24+). A suspended app
+     * stays visible in the launcher but can't be launched until unsuspended —
+     * used to lock Mobile Legends for the day once its habit is checked.
+     */
+    public boolean setAppSuspended(String pkg, boolean suspended) {
+        if (dpm == null || !isDeviceOwner()) return false;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;
+        try {
+            dpm.setPackagesSuspended(adminComponent, new String[] { pkg }, suspended);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 

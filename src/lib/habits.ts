@@ -93,7 +93,7 @@ export const HABITS: HabitDef[] = [
     id: 'push-mmr-ml',
     label: 'Push global Gusion',
     description:
-      'Tiap main wajib sambil live, target push global Gusion, sambil kencengin musik biar have fun. Sampe kalah 3x, kalo udah waktu tidur ya tidur',
+      'Sebelum main: tiap baru login, latihan Fanny dulu sampai sesi training-nya kelar (end), baru boleh main. Tiap main wajib sambil live, target push global Gusion, sambil kencengin musik biar have fun. Sampe kalah 3x, kalo udah waktu tidur ya tidur. Begitu dicentang (kalah 3x), ML langsung KEKUNCI — gak bisa dibuka lagi sampai besok.',
     period: 'limit',
     priority: 19.7,
   },
