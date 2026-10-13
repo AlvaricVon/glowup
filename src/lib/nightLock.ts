@@ -1,5 +1,8 @@
 import { useAppStore } from '../store/useAppStore';
-import type { DayEntry } from './types';
+import { calculateDayPrayers, type PrayerKey } from './prayer';
+import { getCachedCoords } from './location';
+import { readPrayerSettings } from './prayerSettings';
+import type { DayEntry, Period } from './types';
 import { activeHabitsForDay, todayKey } from './utils';
 import {
   enterLockdown,
@@ -10,8 +13,29 @@ import {
   nativeScheduleNightAlarm,
 } from './lockdown';
 
-export const NIGHT_WHITELIST = ['app.voskhod', 'com.whatsapp', 'com.android.deskclock', 'com.andi.alquran.id'];
+/**
+ * Whitelist shared by every gate (night + day period gates). Apps the user is
+ * still allowed to open while a gate is locked: this app, WhatsApp, Spotify,
+ * the Clock/Timer, and the Qur'an app.
+ */
+export const NIGHT_WHITELIST = [
+  'app.voskhod',
+  'com.whatsapp',
+  'com.spotify.music',
+  'com.android.deskclock',
+  'com.andi.alquran.id',
+];
 export const NIGHT_START_HOUR = 22;
+
+/**
+ * Gate periods. The gate for a period becomes due at its "start" time and stays
+ * locked until every active habit of that period for the day is completed.
+ *  - pagi  -> starts at Subuh
+ *  - siang -> starts at Dzuhur
+ *  - sore  -> starts at Ashar
+ *  - night -> starts at 22.00 and requires all pagi habits done
+ */
+export type GatePeriod = 'pagi' | 'siang' | 'sore' | 'night';
 
 const NIGHT_STATE_KEY = 'glowup-night-lock';
 const NIGHT_ENABLED_KEY = 'glowup-night-enabled';
@@ -19,7 +43,11 @@ const NIGHT_ENABLED_KEY = 'glowup-night-enabled';
 export interface NightLockState {
   active: boolean;
   date: string;
+  /** Which gate is currently holding the lock. */
+  gate?: GatePeriod;
 }
+
+const GATE_PERIODS: GatePeriod[] = ['pagi', 'siang', 'sore', 'night'];
 
 function readState(): NightLockState {
   try {
@@ -27,7 +55,8 @@ function readState(): NightLockState {
     if (raw) {
       const o = JSON.parse(raw);
       if (o && typeof o === 'object' && 'active' in o) {
-        return { active: !!o.active, date: typeof o.date === 'string' ? o.date : '' };
+        const gate = GATE_PERIODS.includes(o.gate) ? (o.gate as GatePeriod) : undefined;
+        return { active: !!o.active, date: typeof o.date === 'string' ? o.date : '', gate };
       }
     }
   } catch {
@@ -64,16 +93,71 @@ export function isNightWindow(d: Date): boolean {
   return d.getHours() >= NIGHT_START_HOUR;
 }
 
-export function allPagiDone(day: DayEntry | null): boolean {
+/** Every active habit of `period` for the day is completed. */
+export function periodDone(day: DayEntry | null, period: Period): boolean {
   if (!day) return false;
-  const pagi = activeHabitsForDay(day).filter((h) => h.period === 'pagi');
-  if (pagi.length === 0) return true;
-  return pagi.every((h) => day.habits[h.id]?.completed === true);
+  const hs = activeHabitsForDay(day).filter((h) => h.period === period);
+  if (hs.length === 0) return true;
+  return hs.every((h) => day.habits[h.id]?.completed === true);
+}
+
+export function allPagiDone(day: DayEntry | null): boolean {
+  return periodDone(day, 'pagi');
 }
 
 export function pagiRemaining(day: DayEntry | null): number {
   if (!day) return 0;
   return activeHabitsForDay(day).filter((h) => h.period === 'pagi' && !day.habits[h.id]?.completed).length;
+}
+
+const DAY_GATE_DEFS: { period: 'pagi' | 'siang' | 'sore'; prayer: PrayerKey; fallbackHour: number }[] = [
+  { period: 'pagi', prayer: 'subuh', fallbackHour: 5 },
+  { period: 'siang', prayer: 'dzuhur', fallbackHour: 12 },
+  { period: 'sore', prayer: 'ashar', fallbackHour: 15 },
+];
+
+/** When the given day gate becomes due (prayer time, or a fixed hour fallback). */
+export function gateStartFor(period: 'pagi' | 'siang' | 'sore', now: Date): Date {
+  const def = DAY_GATE_DEFS.find((g) => g.period === period);
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), def?.fallbackHour ?? 5, 0, 0, 0);
+  try {
+    const coords = getCachedCoords();
+    if (coords) {
+      const times = calculateDayPrayers({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        method: readPrayerSettings().method,
+        date: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      });
+      const t = times.find((p) => p.key === def?.prayer)?.time;
+      if (t) return new Date(t.getTime());
+    }
+  } catch {
+    // fall back to the fixed hour
+  }
+  return start;
+}
+
+/** Whether the lock held by `gate` may be released (its habits are done). */
+export function gateDone(day: DayEntry | null, gate: GatePeriod): boolean {
+  if (gate === 'night') return periodDone(day, 'pagi');
+  return periodDone(day, gate);
+}
+
+/**
+ * The gate that should currently hold the lock, or null if the phone is free.
+ * Day gates are checked earliest-first, so an undone earlier period keeps the
+ * phone locked even once a later period has started.
+ */
+export function evaluateGate(day: DayEntry | null, now: Date): GatePeriod | null {
+  if (!day) return null;
+  if (now.getHours() >= NIGHT_START_HOUR) {
+    return periodDone(day, 'pagi') ? null : 'night';
+  }
+  for (const g of DAY_GATE_DEFS) {
+    if (now >= gateStartFor(g.period, now) && !periodDone(day, g.period)) return g.period;
+  }
+  return null;
 }
 
 export function isNightLockEnabled(): boolean {
@@ -92,25 +176,35 @@ export function setNightLockEnabled(v: boolean) {
   }
 }
 
-/** Activate the night lock: native whitelist switches to NIGHT_WHITELIST + LockTask. */
+/** Activate a gate: native whitelist switches to NIGHT_WHITELIST + LockTask. */
+export async function applyGate(gate: GatePeriod): Promise<boolean> {
+  if (!isNative()) return false;
+  await nativeActivateNightLock();
+  const res = await enterLockdown();
+  setState({ active: true, date: todayKey(), gate });
+  return !!(res && res.deviceOwner);
+}
+
+/** Re-assert an already-active gate (e.g. after reboot / re-entry to the app). */
+export async function ensureGate(gate: GatePeriod): Promise<boolean> {
+  if (!isNative()) return false;
+  await nativeActivateNightLock();
+  const res = await enterLockdown();
+  setState({ active: true, date: state.date || todayKey(), gate });
+  return !!(res && res.deviceOwner);
+}
+
+/** Activate the night gate (manual / legacy entry point). */
 export async function applyNightLock(): Promise<boolean> {
-  if (!isNative()) return false;
-  await nativeActivateNightLock();
-  const res = await enterLockdown();
-  setState({ active: true, date: todayKey() });
-  return !!(res && res.deviceOwner);
+  return applyGate('night');
 }
 
-/** Re-assert an already-active night lock (e.g. after reboot / re-entry to the app). */
+/** Re-assert the currently-held gate. */
 export async function ensureNightLock(): Promise<boolean> {
-  if (!isNative()) return false;
-  await nativeActivateNightLock();
-  const res = await enterLockdown();
-  setState({ active: true, date: state.date || todayKey() });
-  return !!(res && res.deviceOwner);
+  return ensureGate(state.gate ?? 'night');
 }
 
-/** Release the night lock: whitelist restored to the saved normal list, LockTask off. */
+/** Release any gate: whitelist restored to the saved normal list, LockTask off. */
 export async function releaseNightLock(): Promise<boolean> {
   if (!isNative()) return false;
   await nativeDeactivateNightLock();
@@ -141,6 +235,7 @@ if (isNative()) {
     getNightState: () => ({
       ...getNightLockState(),
       pagiRemaining: pagiRemaining(useAppStore.getState().today ?? null),
+      currentGate: evaluateGate(useAppStore.getState().today ?? null, new Date()),
     }),
   };
 }

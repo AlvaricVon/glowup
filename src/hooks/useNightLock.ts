@@ -2,21 +2,24 @@ import { useEffect, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { nativeIsDeviceOwner } from '../lib/lockdown';
 import {
-  allPagiDone,
-  applyNightLock,
+  applyGate,
   ensureNightLock,
+  evaluateGate,
+  gateDone,
   getNightLockState,
   isNightLockEnabled,
-  isNightWindow,
   releaseNightLock,
   subscribeNightLock,
 } from '../lib/nightLock';
 
 /**
- * Polls the night-lock rule for the whole app:
- * - Between 22:00 and the next morning, if all pagi habits are NOT done -> native LockTask with
- *   the night whitelist (WhatsApp / Clock / Alquran / Voskhod).
- * - As soon as all applicable pagi habits for the current day are done -> release the lock.
+ * Polls the gate rule for the whole app. A gate locks the phone (native LockTask
+ * with the whitelist: Voskhod / WhatsApp / Spotify / Clock / Alquran) until its
+ * period's habits for the day are all done:
+ * - pagi  -> due at Subuh
+ * - siang -> due at Dzuhur
+ * - sore  -> due at Ashar
+ * - night -> due at 22:00 (requires all pagi habits)
  * Re-asserts on every tick so it survives reboots/relaunches while still active.
  */
 export function useNightLock() {
@@ -33,7 +36,7 @@ export function useNightLock() {
       if (!(await nativeIsDeviceOwner())) return;
       const st = getNightLockState();
       if (st.active) {
-        if (allPagiDone(today)) {
+        if (!isNightLockEnabled() || gateDone(today, st.gate ?? 'night')) {
           await releaseNightLock();
         } else {
           await ensureNightLock();
@@ -41,16 +44,21 @@ export function useNightLock() {
         return;
       }
       if (!isNightLockEnabled()) return;
-      const now = new Date();
-      if (isNightWindow(now) && !allPagiDone(today)) {
-        await applyNightLock();
+      const gate = evaluateGate(today, new Date());
+      if (gate) {
+        await applyGate(gate);
       }
     };
     void tick();
     const id = setInterval(() => void tick(), 30_000);
+    const onVis = () => {
+      if (document.visibilityState === 'visible') void tick();
+    };
+    document.addEventListener('visibilitychange', onVis);
     return () => {
       stopped = true;
       clearInterval(id);
+      document.removeEventListener('visibilitychange', onVis);
     };
   }, [today]);
 }

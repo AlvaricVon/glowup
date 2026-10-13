@@ -25,6 +25,7 @@ public class LockdownManager {
     public static final String[] NIGHT_WHITELIST = new String[] {
         "app.voskhod",
         "com.whatsapp",
+        "com.spotify.music",
         "com.android.deskclock",
         "com.andi.alquran.id"
     };

@@ -14,6 +14,7 @@ import {
 import { playAdhan, stopAdhan, unlockAudio } from '../lib/adhanAudio';
 import {
   applyNightLock,
+  evaluateGate,
   getNightLockState,
   isNightLockEnabled,
   pagiRemaining,
@@ -80,6 +81,7 @@ export function PrayerPanel({ onClose }: Props) {
   const [nightState, setNightState] = useState(() => getNightLockState());
   const [nightBusy, setNightBusy] = useState(false);
   const today = useAppStore((s) => s.today);
+  const dueGate = evaluateGate(today ?? null, new Date());
 
   // The panel is fullscreen — lock page scroll while it's mounted.
   useEffect(() => {
@@ -419,11 +421,12 @@ export function PrayerPanel({ onClose }: Props) {
           >
             <span className="min-w-0">
               <span className="flex items-center gap-2 text-sm font-bold text-neutral-200">
-                <Moon size={15} className="text-brand-400" /> Kunci malam (jam 10)
+                <Moon size={15} className="text-brand-400" /> Kunci otomatis (pagi/siang/sore/malam)
               </span>
               <span className="mt-0.5 block text-xs text-neutral-500">
-                22.00 semua app dikunci, cuma WhatsApp, Jam &amp; Alarm, Al-Quran Indonesia, dan app ini yang kebuka.
-                Baru kebuka lagi pas semua checklist PAGI beres.
+                Begitu masuk Subuh, Dzuhur, Ashar, dan jam 22.00, semua app dikunci &mdash; cuma WhatsApp, Spotify, Jam
+                &amp; Timer, Al-Quran Indonesia, dan app ini yang kebuka. Baru kebuka pas checklist periode itu beres
+                semua (malam butuh checklist PAGI beres).
               </span>
             </span>
             <span
@@ -443,9 +446,13 @@ export function PrayerPanel({ onClose }: Props) {
               <p className="text-xs text-neutral-400">
                 Status:{' '}
                 {nightState.active ? (
-                  <span className="font-semibold text-brand-400">AKTIF</span>
+                  <span className="font-semibold text-brand-400">AKTIF ({nightState.gate ?? 'malam'})</span>
+                ) : dueGate ? (
+                  <span className="font-semibold text-amber-400">siap dikunci ({dueGate})</span>
                 ) : (
-                  <span className="font-semibold text-neutral-200">nonaktif — nyala otomatis jam 22.00</span>
+                  <span className="font-semibold text-neutral-200">
+                    nonaktif — nyala pas Subuh/Dzuhur/Ashar &amp; jam 22.00
+                  </span>
                 )}
                 {' · '}pagi tersisa: <b className="text-neutral-200">{pagiRemaining(today)}</b>
               </p>

@@ -1,6 +1,7 @@
 package app.voskhod.lockdown;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.WindowInsets;
@@ -58,6 +59,10 @@ public class LockScreenActivity extends Activity {
         tvPrayer.setText(prayerName);
         tvMsg.setText("Waktu " + prayerName + ". Belum konfirmasi = HP tetap terkunci.");
 
+        boolean dayGate = "Subuh".equalsIgnoreCase(prayerName)
+                || "Dzuhur".equalsIgnoreCase(prayerName)
+                || "Ashar".equalsIgnoreCase(prayerName);
+
         btnUnlock.setOnClickListener(v -> {
             try {
                 stopLockTask();
@@ -65,6 +70,16 @@ public class LockScreenActivity extends Activity {
             }
             AdhanPlayer.stop();
             LockdownPlugin.notifyUnlocked();
+            // Bring the app back so the JS gate can re-engage and keep the phone
+            // locked while the period's habits are still unfinished.
+            if (dayGate) {
+                try {
+                    Intent i = new Intent(LockScreenActivity.this, app.voskhod.MainActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(i);
+                } catch (Exception ignored) {
+                }
+            }
             finish();
         });
     }

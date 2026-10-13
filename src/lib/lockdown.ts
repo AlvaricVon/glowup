@@ -115,7 +115,7 @@ declare global {
       scheduleNightAlarm?: () => Promise<void>;
       playAdhan?: () => Promise<void>;
       stopAdhan?: () => Promise<void>;
-      getNightState?: () => { active: boolean; date: string; pagiRemaining: number };
+      getNightState?: () => { active: boolean; date: string; pagiRemaining: number; currentGate: string | null };
     };
   }
 }
