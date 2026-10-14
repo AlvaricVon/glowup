@@ -86,6 +86,26 @@ public class LockdownManager {
         return merged;
     }
 
+    /**
+     * Add one package to the lock-task allowlist without touching the stored
+     * whitelist (used to open the camera app temporarily during the Subuh flow).
+     * Call {@link #applyLockTaskWhitelist()} afterwards to drop it again.
+     */
+    public void addLockTaskPackage(String pkg) {
+        if (dpm == null || !isDeviceOwner()) return;
+        if (pkg == null || pkg.isEmpty()) return;
+        String[] base = getLockTaskPackages();
+        for (String p : base) {
+            if (p.equals(pkg)) return;
+        }
+        String[] merged = Arrays.copyOf(base, base.length + 1);
+        merged[base.length] = pkg;
+        try {
+            dpm.setLockTaskPackages(adminComponent, merged);
+        } catch (Exception ignored) {
+        }
+    }
+
     private String getDefaultHomePackage() {
         try {
             Intent intent = new Intent(Intent.ACTION_MAIN);
