@@ -4,7 +4,6 @@ export const DEFAULT_REMINDERS: ReminderConfig[] = [
   { id: 'subuh', label: 'Subuh — sholat time', time: '04:30', enabled: true },
   { id: 'dzuhur', label: 'Dzuhur — sholat time', time: '12:00', enabled: true },
   { id: 'ashar', label: 'Ashar — sholat time', time: '15:15', enabled: true },
-  { id: 'pushup-100', label: '100 push up non stop', time: '16:30', enabled: false },
   { id: 'maghrib', label: 'Maghrib — sholat time', time: '18:00', enabled: true },
   { id: 'isya', label: 'Isya — sholat time', time: '19:15', enabled: true },
   { id: 'mandi-2030', label: 'Mandi jam setengah 9 malam', time: '20:30', enabled: true },
@@ -40,6 +39,9 @@ const LEGACY_REMINDER_DEFAULTS: Record<string, { time: string; label: string }[]
   ],
 };
 
+/** Reminder yang udah gak dipake lagi (mis. jadi bagian tool Konsekuensi) — dibuang dari meta. */
+const RETIRED_REMINDER_IDS = new Set<string>(['pushup-100']);
+
 /**
  * Sinkronin daftar reminder yang kesimpen di meta sama DEFAULT_REMINDERS:
  * - reminder baru (mis. 'tidur-mati-lampu') otomatis ditambahin,
@@ -47,7 +49,7 @@ const LEGACY_REMINDER_DEFAULTS: Record<string, { time: string; label: string }[]
  *   ke default baru, tapi yang udah dikustom manual gak kesentuh.
  */
 export function syncDefaultReminders(reminders: ReminderConfig[] | undefined): ReminderConfig[] {
-  const current = reminders ?? [];
+  const current = (reminders ?? []).filter((r) => !RETIRED_REMINDER_IDS.has(r.id));
   const byId = new Map(current.map((r) => [r.id, { ...r }]));
 
   for (const def of DEFAULT_REMINDERS) {

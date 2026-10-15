@@ -61,13 +61,6 @@ export const HABITS: HabitDef[] = [
     period: 'sore',
     priority: 11.5,
   },
-  {
-    id: 'pushup-100',
-    label: '100 push up non stop',
-    description: '100 rep beneran, non stop — gak boleh stop lama. Kalau berhenti di tengah, ulang dari awal.',
-    period: 'sore',
-    priority: 11.6,
-  },
   { id: 'mandi-sore', label: 'Mandi sore/malem', period: 'sore', priority: 12 },
 
   // Malam
@@ -83,13 +76,6 @@ export const HABITS: HabitDef[] = [
     priority: 25.2,
   },
   { id: 'minum-isya', label: 'Minum 2 gelas', description: 'Setelah sholat isya', period: 'malam', priority: 25.5 },
-  {
-    id: 'mandi-2030',
-    label: 'Mandi jam setengah 9 malam',
-    description: 'Mandi jam 20.30 (setengah 9 malam). Wajib, jangan kesiangan.',
-    period: 'malam',
-    priority: 26,
-  },
   { id: 'grooming-malam', label: 'Sikat gigi & Cuci Muka', description: 'Sebelum tidur', period: 'malam', priority: 28 },
   {
     id: 'tidur-10',
