@@ -22,6 +22,13 @@ export interface HabitEntry {
   timestamp: string | null;
   /** Prayer intentionally skipped (triple-tap): counts as done for gating but must be covered by Sholat Taubat. */
   skipped?: boolean;
+  /**
+   * Habit sengaja di-excuse (mis. gak puasa hari ini / rest day): dianggap beres
+   * (gak nge-lock, gak wajib Taubat, tetep dihitung buat progress 100%).
+   */
+  excused?: boolean;
+  /** Alasan singkat yang ditampilin di checkbox (mis. "Gak puasa hari ini"). */
+  excuseLabel?: string;
 }
 
 export interface DayEntry {

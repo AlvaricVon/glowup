@@ -22,7 +22,8 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(LockdownPlugin.class);
         super.onCreate(savedInstanceState);
-        NightWakeScheduler.scheduleNext(this);
+        // Lock jam 22.00 udah dicabut — batalkan alarm malam kalo masih kepasang.
+        NightWakeScheduler.cancel(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         extendScreenTimeout();
     }

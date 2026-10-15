@@ -19,8 +19,8 @@ import {
  * - pagi  -> due at Subuh
  * - siang -> due at Dzuhur
  * - sore  -> due at Ashar
- * - night -> due at 22:00 (requires all pagi habits)
- * Re-asserts on every tick so it survives reboots/relaunches while still active.
+ * Lock jam 22.00 udah dicabut. Re-asserts on every tick so it survives
+ * reboots/relaunches while still active.
  */
 export function useNightLock() {
   const today = useAppStore((s) => s.today);
@@ -36,7 +36,7 @@ export function useNightLock() {
       if (!(await nativeIsDeviceOwner())) return;
       const st = getNightLockState();
       if (st.active) {
-        if (!isNightLockEnabled() || gateDone(today, st.gate ?? 'night')) {
+        if (!isNightLockEnabled() || gateDone(today, st.gate ?? 'pagi')) {
           await releaseNightLock();
         } else {
           await ensureNightLock();

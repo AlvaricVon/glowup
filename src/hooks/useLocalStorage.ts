@@ -21,6 +21,9 @@ export function useLocalStorage<T>(
   useEffect(() => {
     try {
       window.localStorage.setItem(key, JSON.stringify(value));
+      // Notif ke komponen/hook lain di tab yang sama (storage event gak nyala di
+      // tab yang sama) — dipake buat auto-centang habit "tulis to-do".
+      window.dispatchEvent(new CustomEvent('glowup:local-storage', { detail: { key } }));
     } catch {
       console.warn(`Failed to save ${key} to localStorage`);
     }

@@ -178,6 +178,40 @@ FragmentActivity fa = (FragmentActivity) activity;
     }
 
     @PluginMethod
+    public void getInstalledApps(PluginCall call) {
+        com.getcapacitor.JSArray arr = new com.getcapacitor.JSArray();
+        for (LockdownManager.InstalledApp a : LockdownManager.from(getContext()).getInstalledApps()) {
+            JSObject o = new JSObject();
+            o.put("package", a.packageName);
+            o.put("label", a.label);
+            arr.put(o);
+        }
+        JSObject ret = new JSObject();
+        ret.put("apps", arr);
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void openApp(PluginCall call) {
+        String pkg = call.getString("package");
+        if (pkg == null) { call.reject("package required"); return; }
+        boolean ok = LockdownManager.from(getContext()).openApp(pkg);
+        JSObject ret = new JSObject();
+        ret.put("ok", ok);
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void uninstallApp(PluginCall call) {
+        String pkg = call.getString("package");
+        if (pkg == null) { call.reject("package required"); return; }
+        boolean ok = LockdownManager.from(getContext()).requestUninstall(pkg);
+        JSObject ret = new JSObject();
+        ret.put("ok", ok);
+        call.resolve(ret);
+    }
+
+    @PluginMethod
     public void scheduleNightAlarm(PluginCall call) {
         NightWakeScheduler.scheduleNext(getContext());
         call.resolve();

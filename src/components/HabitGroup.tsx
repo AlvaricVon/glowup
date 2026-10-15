@@ -16,6 +16,9 @@ interface Props {
   /** Habit ids where 3 quick taps trigger onHabitTripleClick instead of toggling. */
   tripleClickHabitIds?: string[];
   onHabitTripleClick?: (id: string, evt: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Habit ids where a double-tap triggers onHabitAltClick instead of toggling (excuse). */
+  altClickHabitIds?: string[];
+  onHabitAltClick?: (id: string, evt: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const ICONS: Record<Period, typeof Sun> = {
@@ -39,12 +42,15 @@ export function HabitGroup({
   disabledIds,
   tripleClickHabitIds,
   onHabitTripleClick,
+  altClickHabitIds,
+  onHabitAltClick,
 }: Props) {
   if (habits.length === 0) return null;
   const Icon = ICONS[period];
   const done = habits.filter((h) => entries[h.id]?.completed).length;
   const disabledSet = disabledIds && disabledIds.length > 0 ? new Set(disabledIds) : null;
   const tripleSet = tripleClickHabitIds && tripleClickHabitIds.length > 0 ? new Set(tripleClickHabitIds) : null;
+  const altSet = altClickHabitIds && altClickHabitIds.length > 0 ? new Set(altClickHabitIds) : null;
   return (
     <section className="animate-slide-up">
       <header className="mb-2 flex items-center justify-between px-1">
@@ -74,6 +80,11 @@ export function HabitGroup({
             onTripleClick={
               tripleSet && tripleSet.has(h.id) && onHabitTripleClick
                 ? (e) => onHabitTripleClick(h.id, e)
+                : undefined
+            }
+            onAltClick={
+              altSet && altSet.has(h.id) && onHabitAltClick
+                ? (e) => onHabitAltClick(h.id, e)
                 : undefined
             }
           />

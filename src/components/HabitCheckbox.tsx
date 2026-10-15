@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, Minus, X } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { useLongPress } from '../hooks/useLongPress';
@@ -14,11 +14,14 @@ interface Props {
   disabled?: boolean;
   /** Kalau diisi, 3 tap cepet bakal manggil ini (bukan nge-toggle) — dipake buat skip sholat. */
   onTripleClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Kalau diisi, 2 tap cepet (double-tap) bakal manggil ini — dipake buat excuse (gak puasa / rest day). */
+  onAltClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = false, onTripleClick }: Props) {
+export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = false, onTripleClick, onAltClick }: Props) {
   const checked = entry.completed;
   const skipped = !!entry.skipped;
+  const excused = !!entry.excused;
   const suppressClickRef = useRef(false);
   const clickCountRef = useRef(0);
   const clickTimerRef = useRef<number | null>(null);
@@ -43,19 +46,21 @@ export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = fa
       suppressClickRef.current = false;
       return;
     }
-    if (!onTripleClick) {
+    // Multi-tap: onAltClick = double-tap (2x), onTripleClick = 3x. Selain itu
+    // toggle biasa (ditunda sebentar biar multi-tap kebaca). currentTarget
+    // di-capture dulu karena React nge-null-in currentTarget setelah handler selesai.
+    const multiHandler = onAltClick ?? onTripleClick;
+    if (!multiHandler) {
       onToggle(e);
       return;
     }
-    // Multi-tap: 3 taps cepet (<300ms) buat skip, selain itu toggle biasa (ditunda
-    // sebentar biar triple-tap kebaca). currentTarget di-capture dulu karena React
-    // nge-null-in currentTarget setelah handler selesai.
+    const tapTarget = onAltClick ? 2 : 3;
     const el = e.currentTarget;
     clickCountRef.current += 1;
     if (clickTimerRef.current !== null) window.clearTimeout(clickTimerRef.current);
-    if (clickCountRef.current >= 3) {
+    if (clickCountRef.current >= tapTarget) {
       clickCountRef.current = 0;
-      onTripleClick(e);
+      multiHandler(e);
       return;
     }
     clickTimerRef.current = window.setTimeout(() => {
@@ -75,9 +80,11 @@ export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = fa
           ? 'cursor-not-allowed border-neutral-200/60 bg-neutral-100/60 opacity-50 dark:border-neutral-800/50 dark:bg-neutral-900/40'
           : skipped
             ? 'border-amber-500/40 bg-amber-50/70 dark:border-amber-500/40 dark:bg-amber-500/10'
-            : checked
-              ? 'border-brand-500/30 bg-brand-50/70 dark:border-brand-500/30 dark:bg-brand-500/10'
-              : 'border-neutral-200/80 bg-white hover:border-neutral-300 dark:border-neutral-800/80 dark:bg-neutral-900/60 dark:hover:border-neutral-700'
+            : excused
+              ? 'border-sky-500/40 bg-sky-50/70 dark:border-sky-500/40 dark:bg-sky-500/10'
+              : checked
+                ? 'border-brand-500/30 bg-brand-50/70 dark:border-brand-500/30 dark:bg-brand-500/10'
+                : 'border-neutral-200/80 bg-white hover:border-neutral-300 dark:border-neutral-800/80 dark:bg-neutral-900/60 dark:hover:border-neutral-700'
       }`}
       aria-pressed={checked}
       aria-disabled={disabled}
@@ -86,13 +93,17 @@ export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = fa
         className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-all ${
           skipped
             ? 'border-amber-500 bg-amber-500'
-            : checked
-              ? 'border-brand-500 bg-brand-500 animate-check-pop'
-              : 'border-neutral-300 bg-transparent dark:border-neutral-700'
+            : excused
+              ? 'border-sky-500 bg-sky-500'
+              : checked
+                ? 'border-brand-500 bg-brand-500 animate-check-pop'
+                : 'border-neutral-300 bg-transparent dark:border-neutral-700'
         }`}
       >
         {skipped ? (
           <X size={15} strokeWidth={3.5} className="text-white" />
+        ) : excused ? (
+          <Minus size={15} strokeWidth={3.5} className="text-white" />
         ) : (
           checked && <Check size={16} strokeWidth={3.5} className="text-white" />
         )}
@@ -102,9 +113,11 @@ export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = fa
           className={`block text-[15px] font-semibold leading-snug ${
             skipped
               ? 'text-amber-700 dark:text-amber-400'
-              : checked
-                ? 'text-neutral-500 line-through decoration-brand-500/40 dark:text-neutral-500'
-                : 'text-neutral-900 dark:text-neutral-100'
+              : excused
+                ? 'text-sky-700 dark:text-sky-400'
+                : checked
+                  ? 'text-neutral-500 line-through decoration-brand-500/40 dark:text-neutral-500'
+                  : 'text-neutral-900 dark:text-neutral-100'
           }`}
         >
           {def.label}
@@ -112,6 +125,10 @@ export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = fa
         {skipped ? (
           <span className="mt-0.5 block text-xs font-medium text-amber-700/90 dark:text-amber-400/90">
             Sengaja di-skip — wajib Sholat Taubat
+          </span>
+        ) : excused ? (
+          <span className="mt-0.5 block text-xs font-medium text-sky-700/90 dark:text-sky-400/90">
+            {entry.excuseLabel || 'Di-excuse hari ini'}
           </span>
         ) : (
           def.description && (
@@ -127,10 +144,14 @@ export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = fa
         {checked && entry.timestamp && (
           <span
             className={`mt-1 block text-[10px] font-medium ${
-              skipped ? 'text-amber-600 dark:text-amber-400' : 'text-brand-600 dark:text-brand-400'
+              skipped
+                ? 'text-amber-600 dark:text-amber-400'
+                : excused
+                  ? 'text-sky-600 dark:text-sky-400'
+                  : 'text-brand-600 dark:text-brand-400'
             }`}
           >
-            {skipped ? '⊗' : '✓'} {format(parseISO(entry.timestamp), 'HH:mm', { locale: idLocale })}
+            {skipped ? '⊗' : excused ? '−' : '✓'} {format(parseISO(entry.timestamp), 'HH:mm', { locale: idLocale })}
           </span>
         )}
       </span>

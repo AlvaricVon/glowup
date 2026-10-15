@@ -4,8 +4,10 @@ export const DEFAULT_REMINDERS: ReminderConfig[] = [
   { id: 'subuh', label: 'Subuh — sholat time', time: '04:30', enabled: true },
   { id: 'dzuhur', label: 'Dzuhur — sholat time', time: '12:00', enabled: true },
   { id: 'ashar', label: 'Ashar — sholat time', time: '15:15', enabled: true },
+  { id: 'pushup-100', label: '100 push up non stop', time: '16:30', enabled: false },
   { id: 'maghrib', label: 'Maghrib — sholat time', time: '18:00', enabled: true },
   { id: 'isya', label: 'Isya — sholat time', time: '19:15', enabled: true },
+  { id: 'mandi-2030', label: 'Mandi jam setengah 9 malam', time: '20:30', enabled: true },
   {
     id: 'tidur-mati-lampu',
     label:

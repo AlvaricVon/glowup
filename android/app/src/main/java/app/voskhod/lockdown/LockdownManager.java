@@ -8,9 +8,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Build;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import app.voskhod.admin.GlowupDeviceAdmin;
 
@@ -193,6 +199,69 @@ public class LockdownManager {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;
         try {
             dpm.setPackagesSuspended(adminComponent, new String[] { pkg }, suspended);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** App yang bisa diluncurkan (ada activity launcher), buat daftar pilihan hapus. */
+    public static final class InstalledApp {
+        public final String packageName;
+        public final String label;
+
+        public InstalledApp(String packageName, String label) {
+            this.packageName = packageName;
+            this.label = label;
+        }
+    }
+
+    /** Semua app yang bisa diluncurkan (selain app ini), diurutin sesuai label. */
+    public List<InstalledApp> getInstalledApps() {
+        List<InstalledApp> out = new ArrayList<>();
+        try {
+            PackageManager pm = context.getPackageManager();
+            Intent main = new Intent(Intent.ACTION_MAIN);
+            main.addCategory(Intent.CATEGORY_LAUNCHER);
+            List<ResolveInfo> apps = pm.queryIntentActivities(main, 0);
+            String self = context.getPackageName();
+            Set<String> seen = new HashSet<>();
+            for (ResolveInfo ri : apps) {
+                if (ri == null || ri.activityInfo == null) continue;
+                String pkg = ri.activityInfo.packageName;
+                if (pkg == null || pkg.equals(self)) continue;
+                if (!seen.add(pkg)) continue;
+                String label = ri.loadLabel(pm).toString();
+                out.add(new InstalledApp(pkg, label));
+            }
+            Collections.sort(out, (a, b) -> a.label.compareToIgnoreCase(b.label));
+        } catch (Exception ignored) {
+        }
+        return out;
+    }
+
+    /** Buka app dari daftar (dipake buat quick-launch alternatif no-porn). */
+    public boolean openApp(String pkg) {
+        if (pkg == null || pkg.isEmpty()) return false;
+        try {
+            Intent i = context.getPackageManager().getLaunchIntentForPackage(pkg);
+            if (i == null) return false;
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(i);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Buka layar uninstall sistem buat app ini (user konfirmasi sendiri). */
+    public boolean requestUninstall(String pkg) {
+        if (pkg == null || pkg.isEmpty()) return false;
+        try {
+            Intent i = new Intent(Intent.ACTION_DELETE);
+            i.setData(Uri.parse("package:" + pkg));
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(i);
             return true;
         } catch (Exception e) {
             return false;

@@ -5,6 +5,7 @@ import { useDayRollover } from './hooks/useDayRollover';
 import { useMlLock } from './hooks/useMlLock';
 import { useNightLock } from './hooks/useNightLock';
 import { useTheme } from './hooks/useTheme';
+import { useTodoHabit } from './hooks/useTodoHabit';
 import { startReminderLoop, stopReminderLoop } from './lib/notifications';
 import { Home } from './pages/Home';
 import { Onboarding } from './pages/Onboarding';
@@ -23,6 +24,7 @@ useTheme();
   useDayRollover();
   useNightLock();
   useMlLock();
+  useTodoHabit();
 
   useEffect(() => {
     void hydrate();

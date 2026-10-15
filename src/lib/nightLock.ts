@@ -25,7 +25,6 @@ export const NIGHT_WHITELIST = [
   'com.android.deskclock',
   'com.andi.alquran.id',
 ];
-export const NIGHT_START_HOUR = 22;
 
 /**
  * Gate periods. The gate for a period becomes due at its "start" time and stays
@@ -33,9 +32,9 @@ export const NIGHT_START_HOUR = 22;
  *  - pagi  -> starts at Subuh
  *  - siang -> starts at Dzuhur
  *  - sore  -> starts at Ashar
- *  - night -> starts at 22.00 and requires all pagi habits done
+ * (Lock jam 22.00 udah dicabut — jam 10 HP bebas total.)
  */
-export type GatePeriod = 'pagi' | 'siang' | 'sore' | 'night';
+export type GatePeriod = 'pagi' | 'siang' | 'sore';
 
 const NIGHT_STATE_KEY = 'glowup-night-lock';
 const NIGHT_ENABLED_KEY = 'glowup-night-enabled';
@@ -47,7 +46,7 @@ export interface NightLockState {
   gate?: GatePeriod;
 }
 
-const GATE_PERIODS: GatePeriod[] = ['pagi', 'siang', 'sore', 'night'];
+const GATE_PERIODS: GatePeriod[] = ['pagi', 'siang', 'sore'];
 
 function readState(): NightLockState {
   try {
@@ -87,10 +86,6 @@ export function subscribeNightLock(fn: () => void): () => void {
   return () => {
     listeners.delete(fn);
   };
-}
-
-export function isNightWindow(d: Date): boolean {
-  return d.getHours() >= NIGHT_START_HOUR;
 }
 
 /** Every active habit of `period` for the day is completed. */
@@ -140,7 +135,6 @@ export function gateStartFor(period: 'pagi' | 'siang' | 'sore', now: Date): Date
 
 /** Whether the lock held by `gate` may be released (its habits are done). */
 export function gateDone(day: DayEntry | null, gate: GatePeriod): boolean {
-  if (gate === 'night') return periodDone(day, 'pagi');
   return periodDone(day, gate);
 }
 
@@ -151,9 +145,6 @@ export function gateDone(day: DayEntry | null, gate: GatePeriod): boolean {
  */
 export function evaluateGate(day: DayEntry | null, now: Date): GatePeriod | null {
   if (!day) return null;
-  if (now.getHours() >= NIGHT_START_HOUR) {
-    return periodDone(day, 'pagi') ? null : 'night';
-  }
   for (const g of DAY_GATE_DEFS) {
     if (now >= gateStartFor(g.period, now) && !periodDone(day, g.period)) return g.period;
   }
@@ -194,14 +185,14 @@ export async function ensureGate(gate: GatePeriod): Promise<boolean> {
   return !!(res && res.deviceOwner);
 }
 
-/** Activate the night gate (manual / legacy entry point). */
+/** Activate the pagi gate (manual entry point). */
 export async function applyNightLock(): Promise<boolean> {
-  return applyGate('night');
+  return applyGate('pagi');
 }
 
 /** Re-assert the currently-held gate. */
 export async function ensureNightLock(): Promise<boolean> {
-  return ensureGate(state.gate ?? 'night');
+  return ensureGate(state.gate ?? 'pagi');
 }
 
 /** Release any gate: whitelist restored to the saved normal list, LockTask off. */

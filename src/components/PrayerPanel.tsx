@@ -421,12 +421,12 @@ export function PrayerPanel({ onClose }: Props) {
           >
             <span className="min-w-0">
               <span className="flex items-center gap-2 text-sm font-bold text-neutral-200">
-                <Moon size={15} className="text-brand-400" /> Kunci otomatis (pagi/siang/sore/malam)
+                <Moon size={15} className="text-brand-400" /> Kunci otomatis (pagi/siang/sore)
               </span>
               <span className="mt-0.5 block text-xs text-neutral-500">
-                Begitu masuk Subuh, Dzuhur, Ashar, dan jam 22.00, semua app dikunci &mdash; cuma WhatsApp, Spotify, Jam
-                &amp; Timer, Al-Quran Indonesia, dan app ini yang kebuka. Baru kebuka pas checklist periode itu beres
-                semua (malam butuh checklist PAGI beres).
+                Begitu masuk Subuh, Dzuhur, dan Ashar, semua app dikunci &mdash; cuma WhatsApp, Spotify, Jam &amp;
+                Timer, Al-Quran Indonesia, dan app ini yang kebuka. Baru kebuka pas checklist periode itu beres semua.
+                (Lock jam 22.00 udah dicabut, jam 10 HP bebas.)
               </span>
             </span>
             <span
@@ -446,13 +446,11 @@ export function PrayerPanel({ onClose }: Props) {
               <p className="text-xs text-neutral-400">
                 Status:{' '}
                 {nightState.active ? (
-                  <span className="font-semibold text-brand-400">AKTIF ({nightState.gate ?? 'malam'})</span>
+                  <span className="font-semibold text-brand-400">AKTIF ({nightState.gate ?? 'pagi'})</span>
                 ) : dueGate ? (
                   <span className="font-semibold text-amber-400">siap dikunci ({dueGate})</span>
                 ) : (
-                  <span className="font-semibold text-neutral-200">
-                    nonaktif — nyala pas Subuh/Dzuhur/Ashar &amp; jam 22.00
-                  </span>
+                  <span className="font-semibold text-neutral-200">nonaktif — nyala pas Subuh/Dzuhur/Ashar</span>
                 )}
                 {' · '}pagi tersisa: <b className="text-neutral-200">{pagiRemaining(today)}</b>
               </p>
@@ -465,7 +463,7 @@ export function PrayerPanel({ onClose }: Props) {
                 {nightBusy
                   ? 'Proses…'
                   : nightState.active
-                    ? 'Lepas kunci malam (butuh scan wajah)'
+                    ? 'Lepas kunci (butuh scan wajah)'
                     : 'Aktifin sekarang'}
               </button>
               {deviceOwner === false && (

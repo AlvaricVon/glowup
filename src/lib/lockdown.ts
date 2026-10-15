@@ -19,6 +19,9 @@ interface LockdownPlugin {
   activateNightLock(): Promise<void>;
   deactivateNightLock(): Promise<void>;
   setAppLocked(opts: { package: string; locked: boolean }): Promise<{ ok: boolean }>;
+  getInstalledApps(): Promise<{ apps: { package: string; label: string }[] }>;
+  openApp(opts: { package: string }): Promise<{ ok: boolean }>;
+  uninstallApp(opts: { package: string }): Promise<{ ok: boolean }>;
   scheduleNightAlarm(): Promise<void>;
   playAdhan(opts: { loop: boolean }): Promise<void>;
   stopAdhan(): Promise<void>;
@@ -111,6 +114,9 @@ declare global {
       getWhitelist?: () => Promise<string[]>;
       authenticate?: (reason: string) => Promise<NativeAuthResult | null>;
       setAppLocked?: (pkg: string, locked: boolean) => Promise<boolean>;
+      getInstalledApps?: () => Promise<InstalledApp[]>;
+      openApp?: (pkg: string) => Promise<boolean>;
+      uninstallApp?: (pkg: string) => Promise<boolean>;
       nightApply?: () => Promise<boolean>;
       nightRelease?: () => Promise<boolean>;
       nightCompleteAllPagi?: () => Promise<number>;
@@ -184,6 +190,41 @@ export async function nativeSetAppLocked(pkg: string, locked: boolean): Promise<
   }
 }
 
+export interface InstalledApp {
+  package: string;
+  label: string;
+}
+
+export async function nativeGetInstalledApps(): Promise<InstalledApp[]> {
+  if (!isNative()) return [];
+  try {
+    const r = await Native.getInstalledApps();
+    return Array.isArray(r.apps) ? r.apps : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function nativeOpenApp(pkg: string): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    const r = await Native.openApp({ package: pkg });
+    return !!r.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function nativeUninstallApp(pkg: string): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    const r = await Native.uninstallApp({ package: pkg });
+    return !!r.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function nativeScheduleNightAlarm(): Promise<void> {
   if (!isNative()) return;
   try {
@@ -229,6 +270,9 @@ if (isNative()) {
     getWhitelist: nativeGetWhitelist,
     authenticate: nativeAuthenticate,
     setAppLocked: nativeSetAppLocked,
+    getInstalledApps: nativeGetInstalledApps,
+    openApp: nativeOpenApp,
+    uninstallApp: nativeUninstallApp,
     playAdhan: nativePlayAdhan,
     stopAdhan: nativeStopAdhan,
   };

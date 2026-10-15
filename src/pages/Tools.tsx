@@ -1,16 +1,20 @@
 import { useState } from 'react';
-import { ArrowLeft, ChevronRight, ClipboardList, KeyRound, LayoutGrid, ShieldCheck, Target, Utensils, Wallet } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ClipboardList, Gavel, KeyRound, LayoutGrid, ShieldCheck, ShieldOff, Target, Utensils, Wallet } from 'lucide-react';
+import { Consequence } from './Consequence';
 import { Finance } from './Finance';
+import { NoPorn } from './NoPorn';
 import { Nutrition } from './Nutrition';
 import { Projects } from './Projects';
 import { SelfRules } from './SelfRules';
 import { Todos } from './Todos';
 import { Vault } from './Vault';
 
-type Tool = 'menu' | 'nutrition' | 'finance' | 'projects' | 'todos' | 'selfrules' | 'vault';
+type Tool = 'menu' | 'nutrition' | 'finance' | 'projects' | 'todos' | 'selfrules' | 'vault' | 'noporn' | 'consequence';
 
 const TOOLS: { id: Exclude<Tool, 'menu'>; name: string; desc: string; icon: typeof Target }[] = [
   { id: 'todos', name: 'To-Do', desc: 'Catatan harian & daftar tugas', icon: ClipboardList },
+  { id: 'noporn', name: 'Bebas Porn', desc: 'Program 6 bulan · counter hari bersih', icon: ShieldOff },
+  { id: 'consequence', name: 'Konsekuensi', desc: 'Gak 100% sehari = hapus 1 app (7 hari)', icon: Gavel },
   { id: 'selfrules', name: 'Self Rules', desc: 'Aturan pribadi yang selalu dipegang', icon: ShieldCheck },
   { id: 'vault', name: 'Vault', desc: 'Simpan & kelola password penting', icon: KeyRound },
   { id: 'nutrition', name: 'Nutrition', desc: 'Jadwal & prinsip makan harian', icon: Utensils },
@@ -85,6 +89,12 @@ export function Tools() {
       </div>
       <div className={view === 'todos' ? '' : 'hidden'}>
         <Todos />
+      </div>
+      <div className={view === 'noporn' ? '' : 'hidden'}>
+        <NoPorn />
+      </div>
+      <div className={view === 'consequence' ? '' : 'hidden'}>
+        <Consequence />
       </div>
       <div className={view === 'selfrules' ? '' : 'hidden'}>
         <SelfRules />

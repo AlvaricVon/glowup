@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ConfettiBurst } from '../components/ConfettiBurst';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { HabitGroup } from '../components/HabitGroup';
@@ -7,12 +7,14 @@ import { PrayerPanel } from '../components/PrayerPanel';
 import { QuoteCard } from '../components/QuoteCard';
 import { StreakCounter } from '../components/StreakCounter';
 import {
+  FASTING_HABIT_ID,
   HABITS,
   HABITS_BY_ID,
   PERIOD_LABELS,
   PERIOD_ORDER,
   PRAYER_HABIT_IDS,
   TAUBAT_HABIT_ID,
+  WORKOUT_HABIT_ID,
 } from '../lib/habits';
 import { quoteForDate } from '../lib/quotes';
 import { computeStreak } from '../lib/streak';
@@ -32,6 +34,7 @@ export function Home() {
   const history = useAppStore((s) => s.history);
   const toggleHabit = useAppStore((s) => s.toggleHabit);
   const markHabitSkipped = useAppStore((s) => s.markHabitSkipped);
+  const excuseHabit = useAppStore((s) => s.excuseHabit);
 
   // Compute streak via useMemo to avoid Zustand v5 infinite-loop:
   // selectors that return new objects on each call cause useSyncExternalStore
@@ -49,6 +52,16 @@ export function Home() {
   const [confettiOrigin, setConfettiOrigin] = useState<{ x: number; y: number } | undefined>();
   const [taubatConfirmOpen, setTaubatConfirmOpen] = useState(false);
   const [skipTarget, setSkipTarget] = useState<string | null>(null);
+  const [excuseTarget, setExcuseTarget] = useState<string | null>(null);
+  const [now, setNow] = useState(() => new Date());
+
+  // Tick biar rule "tidur sebelum jam 10" bisa ke-disable otomatis pas lewat 22:00.
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const sleepLocked = now.getHours() >= 22;
 
   // Sholat Taubat <-> 5 sholat wajib saling eksklusif:
   // - sholat yang SENGAJA di-skip (3 tap) -> kelar tapi kekunci + wajib taubat.
@@ -70,8 +83,10 @@ export function Home() {
     } else if (prayersAllDone && !anyPrayerSkipped) {
       out.push(TAUBAT_HABIT_ID);
     }
+    // Rule tidur: lewat jam 22:00 belum tidur → jangan dicentang.
+    if (sleepLocked) out.push('tidur-10');
     return out;
-  }, [today, taubatDone, prayersAllDone, anyPrayerSkipped]);
+  }, [today, taubatDone, prayersAllDone, anyPrayerSkipped, sleepLocked]);
 
   const groups = useMemo(() => {
     if (!today) return [];
@@ -84,14 +99,15 @@ export function Home() {
           if (!h.conditional) return true;
           return today.conditionals[h.conditional];
         })
-        .map((h) =>
-          h.descriptionForDay
-            ? { ...h, description: h.descriptionForDay(currentDay) }
-            : h,
-        );
+        .map((h) => {
+          if (h.id === 'tidur-10' && sleepLocked) {
+            return { ...h, description: 'Udah lewat jam 10 — gak usah dicentang. Langsung tidur.' };
+          }
+          return h.descriptionForDay ? { ...h, description: h.descriptionForDay(currentDay) } : h;
+        });
       return { period: p, label: PERIOD_LABELS[p], habits: visible };
     }).filter((g) => g.habits.length > 0);
-  }, [today]);
+  }, [today, sleepLocked]);
 
   if (!today || !meta) return null;
 
@@ -130,6 +146,13 @@ export function Home() {
     setSkipTarget(id);
   };
 
+  // Double-tap di checkbox puasa/workout = excuse (gak puasa / rest day).
+  const handleHabitAltClick = (id: string) => {
+    if (disabledIds.includes(id)) return;
+    if (today.habits[id]?.completed) return;
+    setExcuseTarget(id);
+  };
+
   return (
     <div className="mx-auto max-w-lg space-y-4 px-4 pb-28 pt-6">
       <header className="space-y-1">
@@ -159,6 +182,8 @@ export function Home() {
             disabledIds={disabledIds}
             tripleClickHabitIds={[...PRAYER_HABIT_IDS]}
             onHabitTripleClick={handleHabitTripleClick}
+            altClickHabitIds={[FASTING_HABIT_ID, WORKOUT_HABIT_ID]}
+            onHabitAltClick={handleHabitAltClick}
             longPressHabitId="subuh-masjid"
             onHabitLongPress={() => setPrayerPanelOpen(true)}
           />
@@ -196,6 +221,29 @@ export function Home() {
           if (t) void markHabitSkipped(t);
         }}
         onCancel={() => setSkipTarget(null)}
+      />
+
+      <ConfirmModal
+        open={excuseTarget !== null}
+        title={excuseTarget === FASTING_HABIT_ID ? 'Gak puasa hari ini?' : 'Hari ini rest day?'}
+        body={
+          excuseTarget === FASTING_HABIT_ID
+            ? 'Konfirmasi: hari ini kamu GAK puasa. Check ini bakal dianggap beres (HP gak kekunci gara-gara puasa), tapi ditandai "gak puasa hari ini". Jujur ya — kalau sebenernya puasa, jangan pakai ini.'
+            : 'Konfirmasi: hari ini rest day (sesuai program Darebee). Workout dianggap beres buat hari ini dan ditandai rest day, jadi HP gak kekunci gara-gara workout.'
+        }
+        confirmLabel={excuseTarget === FASTING_HABIT_ID ? 'Ya, gw gak puasa' : 'Ya, rest day'}
+        cancelLabel="Batal"
+        onConfirm={() => {
+          const t = excuseTarget;
+          setExcuseTarget(null);
+          if (t) {
+            void excuseHabit(
+              t,
+              t === FASTING_HABIT_ID ? 'Gak puasa hari ini' : 'Rest day (Darebee)',
+            );
+          }
+        }}
+        onCancel={() => setExcuseTarget(null)}
       />
 
       <ConfettiBurst trigger={confettiKey} origin={confettiOrigin} />

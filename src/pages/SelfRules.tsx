@@ -7,6 +7,16 @@ type Rule = {
 
 const RULES: Rule[] = [
   {
+    title: 'Kerjain sesuai angka — jangan kurang',
+    description:
+      'Kalau di checklist ditulis 10 push up, ya harus 10, bukan 9. Kalau 100, ya 100. Kalau gak sanggup full, JANGAN dicentang — jujur kosong lebih baik daripada centang palsu. Centang itu janji ke diri sendiri, bukan hiasan.',
+  },
+  {
+    title: 'Gak sanggup = jangan centang',
+    description:
+      'Contoh: tidur sebelum jam 10. Kalau jam 10 udah lewat tapi belum tidur, jangan di-checklist — biarin kosong. Lebih baik jujur (progress kurang) daripada ngaku-ngaku kelar. Justru dari kejujuran itu ketauan mana yang perlu dibenerin.',
+  },
+  {
     title: 'Postur bagus',
     description:
       'Selalu pasang postur yang bagus: bahu lurus dan duduk tegap, jaga setiap saat. Kalo duduk usahain selalu senderan biar punggung gak bungkuk.',

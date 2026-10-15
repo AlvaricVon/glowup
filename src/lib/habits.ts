@@ -15,6 +15,12 @@ export const PRAYER_HABIT_IDS = [
 /** Pengganti sholat wajib yang sengaja ditinggalin. */
 export const TAUBAT_HABIT_ID = 'taubat';
 
+/** Habit puasa — bisa di-excuse (double-tap) kalau lagi gak puasa. */
+export const FASTING_HABIT_ID = 'puasa-senin-kamis';
+
+/** Habit workout — bisa di-excuse (double-tap) kalau hari ini rest day. */
+export const WORKOUT_HABIT_ID = 'workout-sore';
+
 export const HABITS: HabitDef[] = [
   // Pagi
   { id: 'minum-pagi', label: 'Minum 2 gelas', description: 'Setelah bangun pagi', period: 'pagi', priority: 0.5 },
@@ -22,8 +28,22 @@ export const HABITS: HabitDef[] = [
   { id: 'subuh-masjid', label: 'Sholat subuh', period: 'pagi', priority: 2 },
   { id: 'baca-quran', label: 'Baca Quran 5 halaman', description: 'Setelah sholat subuh', period: 'pagi', priority: 2.5 },
   { id: 'beresin-kamar', label: 'Beresin kamar', description: 'Wajib setiap bangun tidur', period: 'pagi', priority: 3 },
+  {
+    id: 'nulis-todo',
+    label: 'Tulis to-do hari ini',
+    description: 'Buka Tools → To-Do, tulis rencana hari ini. Auto-centang kalau udah ada to-do tanggal hari ini.',
+    period: 'pagi',
+    priority: 3.5,
+  },
   { id: 'physical-pagi', label: 'Hang dead + Skipping + Peregangan', description: 'Hang 30s+ (Target 3m -> Pull up), Skipping 5m, Stretching', period: 'pagi', priority: 4 },
-  { id: 'puasa-senin-kamis', label: 'Puasa Senin Kamis', period: 'pagi', priority: 7, days: [1, 4] },
+  {
+    id: 'puasa-senin-kamis',
+    label: 'Puasa Senin Kamis',
+    description: 'Kalau hari ini lagi GAK puasa, double-tap (2x cepet) checkbox-nya → pilih "gak puasa" biar HP gak kekunci.',
+    period: 'pagi',
+    priority: 7,
+    days: [1, 4],
+  },
   { id: 'mandi-pagi', label: 'Mandi pagi', description: 'Setelah olahraga pagi', period: 'pagi', priority: 8 },
   { id: 'baca-buku', label: 'Baca buku min 10 halaman', description: 'Setelah mandi pagi', period: 'pagi', priority: 8.5 },
 
@@ -34,7 +54,20 @@ export const HABITS: HabitDef[] = [
   // Sore
   { id: 'ashar-masjid', label: 'Sholat ashar', period: 'sore', priority: 10 },
   { id: 'minum-ashar', label: 'Minum 2 gelas', description: 'Setelah sholat ashar', period: 'sore', priority: 10.5, days: REST_DAYS },
-  { id: 'workout-sore', label: 'Workout', description: 'Progress workout sore (hari non-Senin/Kamis), sebelum mandi sore', period: 'sore', priority: 11.5, days: REST_DAYS },
+  {
+    id: 'workout-sore',
+    label: 'Workout',
+    description: 'Tiap hari ikut program Darebee. Kalau hari ini rest day, double-tap (2x cepet) buat tandai rest day.',
+    period: 'sore',
+    priority: 11.5,
+  },
+  {
+    id: 'pushup-100',
+    label: '100 push up non stop',
+    description: '100 rep beneran, non stop — gak boleh stop lama. Kalau berhenti di tengah, ulang dari awal.',
+    period: 'sore',
+    priority: 11.6,
+  },
   { id: 'mandi-sore', label: 'Mandi sore/malem', period: 'sore', priority: 12 },
 
   // Malam
@@ -50,6 +83,13 @@ export const HABITS: HabitDef[] = [
     priority: 25.2,
   },
   { id: 'minum-isya', label: 'Minum 2 gelas', description: 'Setelah sholat isya', period: 'malam', priority: 25.5 },
+  {
+    id: 'mandi-2030',
+    label: 'Mandi jam setengah 9 malam',
+    description: 'Mandi jam 20.30 (setengah 9 malam). Wajib, jangan kesiangan.',
+    period: 'malam',
+    priority: 26,
+  },
   { id: 'grooming-malam', label: 'Sikat gigi & Cuci Muka', description: 'Sebelum tidur', period: 'malam', priority: 28 },
   {
     id: 'tidur-10',
