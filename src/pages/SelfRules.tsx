@@ -107,11 +107,6 @@ const RULES: Rule[] = [
       'Semua barang yang ada harus dimanfaatin — jangan dibiarin nganggur atau disia-siain. Mau diolah, dijual, dipakai, atau diapain aja, yang penting berguna dan gak mubazir.',
   },
   {
-    title: 'Panasin motor & genset sebelum keluar rumah',
-    description:
-      'Sebelum keluar dari rumah, panasin dulu motor dan genset kalo ada, biar mesinnya sehat dan siap dipakai.',
-  },
-  {
     title: 'Jalan kaki kalo bisa',
     description:
       'Ke mana-mana usahain jalan kaki dulu. Cek jaraknya di Google Maps: kalau masih 1 jam atau kurang, jalan kaki. Kalau udah lebih dari 1 jam, naik sepeda.',

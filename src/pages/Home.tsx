@@ -8,6 +8,7 @@ import { QuoteCard } from '../components/QuoteCard';
 import { StreakCounter } from '../components/StreakCounter';
 import {
   FASTING_HABIT_ID,
+  GENSET_HABIT_ID,
   HABITS,
   HABITS_BY_ID,
   PERIOD_LABELS,
@@ -18,6 +19,7 @@ import {
 } from '../lib/habits';
 import { quoteForDate } from '../lib/quotes';
 import { computeStreak } from '../lib/streak';
+import { YT_HABIT_ID, useYtUpload } from '../lib/ytUpload';
 import { useAppStore } from '../store/useAppStore';
 import {
   activeHabitCount,
@@ -35,6 +37,7 @@ export function Home() {
   const toggleHabit = useAppStore((s) => s.toggleHabit);
   const markHabitSkipped = useAppStore((s) => s.markHabitSkipped);
   const excuseHabit = useAppStore((s) => s.excuseHabit);
+  const { progress: ytProgress, advance: advanceYt } = useYtUpload();
 
   // Compute streak via useMemo to avoid Zustand v5 infinite-loop:
   // selectors that return new objects on each call cause useSyncExternalStore
@@ -96,6 +99,7 @@ export function Home() {
       const visible = all
         .filter((h) => {
           if (h.days && !h.days.includes(currentDay)) return false;
+          if (h.visible && !h.visible(today)) return false;
           if (!h.conditional) return true;
           return today.conditionals[h.conditional];
         })
@@ -131,6 +135,20 @@ export function Home() {
 
   const handleHabitToggle = (id: string, evt: React.MouseEvent<HTMLButtonElement>) => {
     if (disabledIds.includes(id)) return;
+    // Upload konten YT pakai progress 3 hari: tap = naikin 1 langkah (maks 1x/hari).
+    if (id === YT_HABIT_ID) {
+      const was = ytProgress;
+      const next = advanceYt();
+      if (next >= 100 && was < 100) {
+        if (evt) {
+          const rect = (evt.currentTarget as HTMLElement).getBoundingClientRect();
+          setConfettiOrigin({ x: rect.left + 24, y: rect.top + 24 });
+        }
+        setConfettiKey((k) => k + 1);
+        vibrate(15);
+      }
+      return;
+    }
     // Centang Sholat Taubat wajib lewat konfirmasi serius dulu.
     if (id === TAUBAT_HABIT_ID && !(today.habits[id]?.completed ?? false)) {
       setTaubatConfirmOpen(true);
@@ -146,12 +164,34 @@ export function Home() {
     setSkipTarget(id);
   };
 
-  // Double-tap di checkbox puasa/workout = excuse (gak puasa / rest day).
+  // Double-tap di checkbox puasa/workout/genset = excuse.
   const handleHabitAltClick = (id: string) => {
     if (disabledIds.includes(id)) return;
     if (today.habits[id]?.completed) return;
     setExcuseTarget(id);
   };
+
+  const excuseCopy =
+    excuseTarget === FASTING_HABIT_ID
+      ? {
+          title: 'Gak puasa hari ini?',
+          body: 'Konfirmasi: hari ini kamu GAK puasa. Check ini bakal ditandai "gak puasa" dan tetep kehitung belum beres di progress, tapi HP gak kekunci. Jujur ya — kalau sebenernya puasa, jangan pakai ini.',
+          confirm: 'Ya, gw gak puasa',
+          label: 'Gak puasa hari ini',
+        }
+      : excuseTarget === GENSET_HABIT_ID
+        ? {
+            title: 'Gak ada genset/motor hari ini?',
+            body: 'Konfirmasi: hari ini gak ada genset/motor/mobil yang perlu dipanasin. Check ini dianggap beres buat hari ini.',
+            confirm: 'Ya, gak ada',
+            label: 'Gak ada genset/motor hari ini',
+          }
+        : {
+            title: 'Hari ini rest day?',
+            body: 'Konfirmasi: hari ini rest day (sesuai program Darebee). Workout dianggap beres buat hari ini dan ditandai rest day, jadi HP gak kekunci gara-gara workout.',
+            confirm: 'Ya, rest day',
+            label: 'Rest day (Darebee)',
+          };
 
   return (
     <div className="mx-auto max-w-lg space-y-4 px-4 pb-28 pt-6">
@@ -182,8 +222,9 @@ export function Home() {
             disabledIds={disabledIds}
             tripleClickHabitIds={[...PRAYER_HABIT_IDS]}
             onHabitTripleClick={handleHabitTripleClick}
-            altClickHabitIds={[FASTING_HABIT_ID, WORKOUT_HABIT_ID]}
+            altClickHabitIds={[FASTING_HABIT_ID, WORKOUT_HABIT_ID, GENSET_HABIT_ID]}
             onHabitAltClick={handleHabitAltClick}
+            progressById={{ [YT_HABIT_ID]: ytProgress }}
             longPressHabitId="subuh-masjid"
             onHabitLongPress={() => setPrayerPanelOpen(true)}
           />
@@ -225,23 +266,14 @@ export function Home() {
 
       <ConfirmModal
         open={excuseTarget !== null}
-        title={excuseTarget === FASTING_HABIT_ID ? 'Gak puasa hari ini?' : 'Hari ini rest day?'}
-        body={
-          excuseTarget === FASTING_HABIT_ID
-            ? 'Konfirmasi: hari ini kamu GAK puasa. Check ini bakal dianggap beres (HP gak kekunci gara-gara puasa), tapi ditandai "gak puasa hari ini". Jujur ya — kalau sebenernya puasa, jangan pakai ini.'
-            : 'Konfirmasi: hari ini rest day (sesuai program Darebee). Workout dianggap beres buat hari ini dan ditandai rest day, jadi HP gak kekunci gara-gara workout.'
-        }
-        confirmLabel={excuseTarget === FASTING_HABIT_ID ? 'Ya, gw gak puasa' : 'Ya, rest day'}
+        title={excuseCopy.title}
+        body={excuseCopy.body}
+        confirmLabel={excuseCopy.confirm}
         cancelLabel="Batal"
         onConfirm={() => {
           const t = excuseTarget;
           setExcuseTarget(null);
-          if (t) {
-            void excuseHabit(
-              t,
-              t === FASTING_HABIT_ID ? 'Gak puasa hari ini' : 'Rest day (Darebee)',
-            );
-          }
+          if (t) void excuseHabit(t, excuseCopy.label);
         }}
         onCancel={() => setExcuseTarget(null)}
       />

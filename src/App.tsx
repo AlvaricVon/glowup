@@ -12,6 +12,7 @@ import { Onboarding } from './pages/Onboarding';
 import { Settings } from './pages/Settings';
 import { Stats } from './pages/Stats';
 import { Tools } from './pages/Tools';
+import { useYtUpload } from './lib/ytUpload';
 import { useAppStore } from './store/useAppStore';
 
 export default function App() {
@@ -25,6 +26,7 @@ useTheme();
   useNightLock();
   useMlLock();
   useTodoHabit();
+  useYtUpload();
 
   useEffect(() => {
     void hydrate();

@@ -1,6 +1,6 @@
 import { format, startOfWeek, addDays } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
-import { HABITS } from './habits';
+import { FASTING_HABIT_ID, HABITS } from './habits';
 import type { DayEntry, HabitDef } from './types';
 
 export const STREAK_THRESHOLD = 0.8;
@@ -60,6 +60,7 @@ export function activeHabitsForDay(day: DayEntry): HabitDef[] {
   const currentDay = weekdayOf(day.date);
   return HABITS.filter((h) => {
     if (h.days && !h.days.includes(currentDay)) return false;
+    if (h.visible && !h.visible(day)) return false;
     if (!h.conditional) return true;
     return day.conditionals[h.conditional];
   });
@@ -71,7 +72,14 @@ export function activeHabitCount(day: DayEntry): number {
 
 export function completedCount(day: DayEntry): number {
   const active = activeHabitsForDay(day);
-  return active.filter((h) => day.habits[h.id]?.completed).length;
+  return active.filter((h) => {
+    const e = day.habits[h.id];
+    if (!e?.completed) return false;
+    // Puasa yang di-excuse (gak puasa) tetap masuk total tapi GAK dihitung
+    // beres — biar bar gak nambah pas hari itu gak puasa.
+    if (e.excused && h.id === FASTING_HABIT_ID) return false;
+    return true;
+  }).length;
 }
 
 export function calcCompletionRate(day: DayEntry): number {

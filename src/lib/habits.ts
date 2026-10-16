@@ -1,7 +1,26 @@
-import type { HabitDef, Period } from './types';
+import type { DayEntry, HabitDef, Period } from './types';
 
 // Days: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-const REST_DAYS = [0, 2, 3, 5, 6]; // Tuesday, Wednesday, Friday, Saturday, Sunday (Not Mon/Thu)
+const MON = 1;
+const THU = 4;
+
+/** Day-of-week (0=Sun..6=Sat) buat YYYY-MM-DD, dihitung lokal. */
+function dowOf(date: string): number {
+  const [y, m, d] = date.split('-').map(Number);
+  return new Date(y, m - 1, d).getDay();
+}
+
+/**
+ * Minum 2 gelas abis dzuhur/ashar: muncul tiap hari KECUALI Senin/Kamis yang
+ * lagi puasa (biar gak dobel sama jadwal puasa). Tapi kalau puasa hari itu
+ * di-excuse (gak puasa), minum-nya nongol lagi.
+ */
+function minumVisible(day: DayEntry): boolean {
+  const dow = dowOf(day.date);
+  const isMonThu = dow === MON || dow === THU;
+  if (!isMonThu) return true;
+  return !!day.habits[FASTING_HABIT_ID]?.excused;
+}
 
 /** The 5 daily wajib prayers. Sholat Taubat locks against these (mutual exclusion). */
 export const PRAYER_HABIT_IDS = [
@@ -20,6 +39,9 @@ export const FASTING_HABIT_ID = 'puasa-senin-kamis';
 
 /** Habit workout — bisa di-excuse (double-tap) kalau hari ini rest day. */
 export const WORKOUT_HABIT_ID = 'workout-sore';
+
+/** Habit panasin motor & genset — bisa di-excuse (double-tap) kalau gak ada kendaraan. */
+export const GENSET_HABIT_ID = 'panasi-kendaraan';
 
 export const HABITS: HabitDef[] = [
   // Pagi
@@ -46,14 +68,36 @@ export const HABITS: HabitDef[] = [
   },
   { id: 'mandi-pagi', label: 'Mandi pagi', description: 'Setelah olahraga pagi', period: 'pagi', priority: 8 },
   { id: 'baca-buku', label: 'Baca buku min 10 halaman', description: 'Setelah mandi pagi', period: 'pagi', priority: 8.5 },
+  {
+    id: GENSET_HABIT_ID,
+    label: 'Panasin motor & genset',
+    description:
+      'Panasin motor (dan genset kalo ada) sebelum dipakai hari ini. Kalau hari ini lagi gak ada genset/motor/mobil, double-tap (2x cepet) buat tandai.',
+    period: 'pagi',
+    priority: 8.7,
+  },
 
   // Siang
   { id: 'dzuhur-masjid', label: 'Sholat dzuhur', period: 'siang', priority: 8 },
-  { id: 'minum-dzuhur', label: 'Minum 2 gelas', description: 'Setelah sholat dzuhur', period: 'siang', priority: 8.5, days: REST_DAYS },
+  {
+    id: 'minum-dzuhur',
+    label: 'Minum 2 gelas',
+    description: 'Setelah sholat dzuhur',
+    period: 'siang',
+    priority: 8.5,
+    visible: minumVisible,
+  },
 
   // Sore
   { id: 'ashar-masjid', label: 'Sholat ashar', period: 'sore', priority: 10 },
-  { id: 'minum-ashar', label: 'Minum 2 gelas', description: 'Setelah sholat ashar', period: 'sore', priority: 10.5, days: REST_DAYS },
+  {
+    id: 'minum-ashar',
+    label: 'Minum 2 gelas',
+    description: 'Setelah sholat ashar',
+    period: 'sore',
+    priority: 10.5,
+    visible: minumVisible,
+  },
   {
     id: 'workout-sore',
     label: 'Workout',
@@ -111,7 +155,8 @@ export const HABITS: HabitDef[] = [
   {
     id: 'upload-konten-yt',
     label: 'Upload konten YT',
-    description: 'Upload ke YouTube (Shorts & video panjang), langsung publish',
+    description:
+      'Upload ke YouTube (Shorts & video panjang), langsung publish. Progress 3 hari: tap naik 25% → 75% → 100% (maks 1x naik per hari). Baru 100% pas udah beneran ke-upload.',
     period: 'limit',
     priority: 19.6,
   },
@@ -122,14 +167,6 @@ export const HABITS: HabitDef[] = [
       'Sebelum main: tiap baru login, latihan Fanny dulu sampai sesi training-nya kelar (end), baru boleh main. Tiap main wajib sambil live, target push global Gusion, sambil kencengin musik biar have fun. Sampe kalah 3x, kalo udah waktu tidur ya tidur. Begitu dicentang (kalah 3x), ML langsung KEKUNCI — gak bisa dibuka lagi sampai besok.',
     period: 'limit',
     priority: 19.7,
-  },
-  {
-    id: 'no-overeat',
-    label: 'Makan secukupnya',
-    description:
-      'Makan cuma pas laper, minimal sampai perut gak keroncongan lagi. Kunyah makanan 32x dulu sebelum ditelan, porsi secukupnya & gak overeat. Kalo makan nasi maksimal 2 centong aja',
-    period: 'limit',
-    priority: 30,
   },
   { id: 'no-porn', label: 'No porn', description: 'Seharian gak nonton/liat', period: 'limit', priority: 31 },
   { id: 'no-scroll', label: 'No scrolling sosmed', description: 'Buka utk keperluan spesifik OK', period: 'limit', priority: 32 },

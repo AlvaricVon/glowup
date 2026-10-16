@@ -14,6 +14,8 @@ export interface HabitDef {
   conditional?: ConditionalKey;
   /** If set, overrides `description` with a day-of-week aware string (0=Sun..6=Sat). */
   descriptionForDay?: (day: number) => string;
+  /** If set, habit only shows when this returns true for the day (dynamic visibility, e.g. minum pas gak puasa). */
+  visible?: (day: DayEntry) => boolean;
 }
 
 export interface HabitEntry {

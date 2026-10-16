@@ -16,9 +16,12 @@ interface Props {
   onTripleClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   /** Kalau diisi, 2 tap cepet (double-tap) bakal manggil ini — dipake buat excuse (gak puasa / rest day). */
   onAltClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Kalau diisi (0..100), habit ini nampilin progress multi-hari (mis. upload YT). */
+  progress?: number;
 }
 
-export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = false, onTripleClick, onAltClick }: Props) {
+export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = false, onTripleClick, onAltClick, progress }: Props) {
+  const isProgress = typeof progress === 'number';
   const checked = entry.completed;
   const skipped = !!entry.skipped;
   const excused = !!entry.excused;
@@ -104,9 +107,13 @@ export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = fa
           <X size={15} strokeWidth={3.5} className="text-white" />
         ) : excused ? (
           <Minus size={15} strokeWidth={3.5} className="text-white" />
-        ) : (
-          checked && <Check size={16} strokeWidth={3.5} className="text-white" />
-        )}
+        ) : checked ? (
+          <Check size={16} strokeWidth={3.5} className="text-white" />
+        ) : isProgress ? (
+          <span className="text-[10px] font-extrabold leading-none text-neutral-500 dark:text-neutral-400">
+            {progress}
+          </span>
+        ) : null}
       </span>
       <span className="min-w-0 flex-1">
         <span
@@ -129,6 +136,24 @@ export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = fa
         ) : excused ? (
           <span className="mt-0.5 block text-xs font-medium text-sky-700/90 dark:text-sky-400/90">
             {entry.excuseLabel || 'Di-excuse hari ini'}
+          </span>
+        ) : isProgress ? (
+          <span className="mt-1 block">
+            <span className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+              <span>{checked ? 'Udah ke-upload' : 'Progress upload (3 hari)'}</span>
+              <span className="font-semibold text-brand-600 dark:text-brand-400">{progress}%</span>
+            </span>
+            <span className="mt-1 block h-1.5 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+              <span
+                className="block h-full rounded-full bg-brand-500 transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </span>
+            {!checked && (
+              <span className="mt-1 block text-[10px] text-neutral-400 dark:text-neutral-500">
+                Tap buat naikin 1 langkah (maks 1x/hari)
+              </span>
+            )}
           </span>
         ) : (
           def.description && (

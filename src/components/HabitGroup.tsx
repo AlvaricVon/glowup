@@ -16,6 +16,8 @@ interface Props {
   /** Habit ids where 3 quick taps trigger onHabitTripleClick instead of toggling. */
   tripleClickHabitIds?: string[];
   onHabitTripleClick?: (id: string, evt: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Habit id → progress % (0..100) buat habit multi-hari (mis. upload YT). */
+  progressById?: Record<string, number>;
   /** Habit ids where a double-tap triggers onHabitAltClick instead of toggling (excuse). */
   altClickHabitIds?: string[];
   onHabitAltClick?: (id: string, evt: React.MouseEvent<HTMLButtonElement>) => void;
@@ -44,6 +46,7 @@ export function HabitGroup({
   onHabitTripleClick,
   altClickHabitIds,
   onHabitAltClick,
+  progressById,
 }: Props) {
   if (habits.length === 0) return null;
   const Icon = ICONS[period];
@@ -71,6 +74,7 @@ export function HabitGroup({
             def={h}
             entry={entries[h.id] ?? { completed: false, timestamp: null }}
             onToggle={(e) => onToggle(h.id, e)}
+            progress={progressById ? progressById[h.id] : undefined}
             disabled={disabledSet ? disabledSet.has(h.id) : false}
             onLongPress={
               longPressHabitId && h.id === longPressHabitId && onHabitLongPress
