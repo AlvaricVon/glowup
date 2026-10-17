@@ -12,6 +12,7 @@ import { Onboarding } from './pages/Onboarding';
 import { Settings } from './pages/Settings';
 import { Stats } from './pages/Stats';
 import { Tools } from './pages/Tools';
+import { useLaundry } from './lib/laundry';
 import { useYtUpload } from './lib/ytUpload';
 import { useAppStore } from './store/useAppStore';
 
@@ -27,6 +28,7 @@ useTheme();
   useMlLock();
   useTodoHabit();
   useYtUpload();
+  useLaundry();
 
   useEffect(() => {
     void hydrate();

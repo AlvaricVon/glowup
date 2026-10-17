@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, ChevronRight, ClipboardList, Gavel, KeyRound, LayoutGrid, ShieldCheck, ShieldOff, Target, Utensils, Wallet } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ClipboardList, Film, Gavel, KeyRound, LayoutGrid, ShieldCheck, ShieldOff, Target, Utensils, Wallet } from 'lucide-react';
 import { Consequence } from './Consequence';
 import { Finance } from './Finance';
 import { NoPorn } from './NoPorn';
@@ -8,8 +8,9 @@ import { Projects } from './Projects';
 import { SelfRules } from './SelfRules';
 import { Todos } from './Todos';
 import { Vault } from './Vault';
+import { VideoGoals } from './VideoGoals';
 
-type Tool = 'menu' | 'nutrition' | 'finance' | 'projects' | 'todos' | 'selfrules' | 'vault' | 'noporn' | 'consequence';
+type Tool = 'menu' | 'nutrition' | 'finance' | 'projects' | 'todos' | 'selfrules' | 'vault' | 'noporn' | 'consequence' | 'vidgoals';
 
 const TOOLS: { id: Exclude<Tool, 'menu'>; name: string; desc: string; icon: typeof Target }[] = [
   { id: 'todos', name: 'To-Do', desc: 'Catatan harian & daftar tugas', icon: ClipboardList },
@@ -20,6 +21,7 @@ const TOOLS: { id: Exclude<Tool, 'menu'>; name: string; desc: string; icon: type
   { id: 'nutrition', name: 'Nutrition', desc: 'Jadwal & prinsip makan harian', icon: Utensils },
   { id: 'finance', name: 'Keuangan', desc: 'Alokasi pendapatan otomatis', icon: Wallet },
   { id: 'projects', name: 'Projects', desc: 'Prioritas bisnis yang mau disuksesin', icon: Target },
+  { id: 'vidgoals', name: 'Vid Goals', desc: 'Koleksi video + target yang mau dicapai', icon: Film },
 ];
 
 export function Tools() {
@@ -101,6 +103,9 @@ export function Tools() {
       </div>
       <div className={view === 'vault' ? '' : 'hidden'}>
         <Vault active={view === 'vault'} />
+      </div>
+      <div className={view === 'vidgoals' ? '' : 'hidden'}>
+        <VideoGoals />
       </div>
     </>
   );

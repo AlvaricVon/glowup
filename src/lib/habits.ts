@@ -22,6 +22,35 @@ function minumVisible(day: DayEntry): boolean {
   return !!day.habits[FASTING_HABIT_ID]?.excused;
 }
 
+const LAUNDRY_KEY = 'glowup-laundry';
+
+/** Selisih hari (a - b) dalam satuan hari, berbasis tengah malam lokal. */
+function dayDiff(a: string, b: string): number {
+  const [ay, am, ad] = a.split('-').map(Number);
+  const [by, bm, bd] = b.split('-').map(Number);
+  return Math.round((new Date(ay, am - 1, ad).getTime() - new Date(by, bm - 1, bd).getTime()) / 86_400_000);
+}
+
+/**
+ * Cuci baju muncul tiap 2 hari: keliatan kalau udah >= 2 hari sejak terakhir
+ * nyuci. State `lastWash` disimpen di lib/laundry.ts. Kalau belum ada data,
+ * sembunyi dulu sampai lib/laundry.ts nge-seed tanggal hari ini.
+ */
+function laundryVisible(day: DayEntry): boolean {
+  let lastWash: string | null = null;
+  try {
+    const raw = localStorage.getItem(LAUNDRY_KEY);
+    if (raw) {
+      const o = JSON.parse(raw) as { lastWash?: unknown };
+      if (typeof o.lastWash === 'string') lastWash = o.lastWash;
+    }
+  } catch {
+    // ignore
+  }
+  if (!lastWash) return false;
+  return dayDiff(day.date, lastWash) >= 2;
+}
+
 /** The 5 daily wajib prayers. Sholat Taubat locks against these (mutual exclusion). */
 export const PRAYER_HABIT_IDS = [
   'subuh-masjid',
@@ -42,6 +71,9 @@ export const WORKOUT_HABIT_ID = 'workout-sore';
 
 /** Habit panasin motor & genset — bisa di-excuse (double-tap) kalau gak ada kendaraan. */
 export const GENSET_HABIT_ID = 'panasi-kendaraan';
+
+/** Habit cuci baju — muncul tiap 2 hari. */
+export const CUCI_BAJU_HABIT_ID = 'cuci-baju';
 
 export const HABITS: HabitDef[] = [
   // Pagi
@@ -66,7 +98,21 @@ export const HABITS: HabitDef[] = [
     priority: 7,
     days: [1, 4],
   },
-  { id: 'mandi-pagi', label: 'Mandi pagi', description: 'Setelah olahraga pagi', period: 'pagi', priority: 8 },
+  {
+    id: 'mandi-pagi',
+    label: 'Mandi pagi',
+    description: 'Setelah olahraga pagi. Sekalian grooming jembut & ketek.',
+    period: 'pagi',
+    priority: 8,
+  },
+  {
+    id: 'grooming-wangian',
+    label: 'Grooming & pake wangian',
+    description:
+      'Makarizo, sea salt spray, minyak wangi, + bersihin pusar & telinga pake korek kuping.',
+    period: 'pagi',
+    priority: 8.2,
+  },
   { id: 'baca-buku', label: 'Baca buku min 10 halaman', description: 'Setelah mandi pagi', period: 'pagi', priority: 8.5 },
   {
     id: GENSET_HABIT_ID,
@@ -86,6 +132,14 @@ export const HABITS: HabitDef[] = [
     period: 'siang',
     priority: 8.5,
     visible: minumVisible,
+  },
+  {
+    id: CUCI_BAJU_HABIT_ID,
+    label: 'Cuci baju',
+    description: 'Muncul tiap 2 hari. Centang kalau udah nyuci hari ini.',
+    period: 'siang',
+    priority: 8.7,
+    visible: laundryVisible,
   },
 
   // Sore
