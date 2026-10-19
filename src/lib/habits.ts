@@ -195,7 +195,7 @@ export const HABITS: HabitDef[] = [
   {
     id: 'upload-konten',
     label: 'Upload konten',
-    description: 'OddlyLab · ML · TikTok & Shorts',
+    description: 'OddlyLab · TikTok & Shorts',
     period: 'limit',
     priority: 19.5,
   },
@@ -221,6 +221,13 @@ export const HABITS: HabitDef[] = [
       'Sebelum main: tiap baru login, latihan Fanny dulu sampai sesi training-nya kelar (end), baru boleh main. Tiap main wajib sambil live, target push global Gusion, sambil kencengin musik biar have fun. Sampe kalah 3x, kalo udah waktu tidur ya tidur. Begitu dicentang (kalah 3x), ML langsung KEKUNCI — gak bisa dibuka lagi sampai besok.',
     period: 'limit',
     priority: 19.7,
+  },
+  {
+    id: 'upload-konten-ml',
+    label: 'Upload konten ML',
+    description: 'Upload konten Mobile Legends tiap hari',
+    period: 'limit',
+    priority: 19.75,
   },
   { id: 'no-porn', label: 'No porn', description: 'Seharian gak nonton/liat', period: 'limit', priority: 31 },
   { id: 'no-scroll', label: 'No scrolling sosmed', description: 'Buka utk keperluan spesifik OK', period: 'limit', priority: 32 },
