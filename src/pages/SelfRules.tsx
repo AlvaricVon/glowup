@@ -58,10 +58,7 @@ const RULES: Rule[] = [
     title: 'Bulu dicukur',
     description: 'Jenggot, jambang, kumis, dan jembut dicukur kalau udah terlalu kelihatan atau berantakan.',
   },
-  {
-    title: 'Bulu ketek dicabut',
-    description: 'Cabut rutin biar tetap wangi dan rapi.',
-  },
+
   {
     title: 'Selalu wangi, jangan bau',
     description:

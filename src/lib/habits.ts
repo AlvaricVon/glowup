@@ -101,15 +101,14 @@ export const HABITS: HabitDef[] = [
   {
     id: 'mandi-pagi',
     label: 'Mandi pagi',
-    description: 'Setelah olahraga pagi. Sekalian grooming jembut & ketek.',
+    description: 'Setelah olahraga pagi. Sekalian grooming jembut.',
     period: 'pagi',
     priority: 8,
   },
   {
     id: 'grooming-wangian',
     label: 'Grooming & pake wangian',
-    description:
-      'Makarizo, sea salt spray, minyak wangi, + bersihin pusar & telinga pake korek kuping.',
+    description: 'Makarizo, sea salt spray, minyak wangi, + bersihin pusar & telinga pake korek kuping.',
     period: 'pagi',
     priority: 8.2,
   },
