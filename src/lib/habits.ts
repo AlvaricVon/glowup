@@ -101,7 +101,7 @@ export const HABITS: HabitDef[] = [
   {
     id: 'mandi-pagi',
     label: 'Mandi pagi',
-    description: 'Setelah olahraga pagi. Sekalian grooming jembut.',
+    description: 'Setelah olahraga pagi. Sekalian grooming jembut & cukur ketek.',
     period: 'pagi',
     priority: 8,
   },
