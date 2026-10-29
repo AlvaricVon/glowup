@@ -1,18 +1,16 @@
 import { useEffect, useState } from 'react';
 import { BottomNav, type Tab } from './components/BottomNav';
-import { SholatGate } from './components/SholatGate';
 import { useDayRollover } from './hooks/useDayRollover';
-import { useMlLock } from './hooks/useMlLock';
-import { useNightLock } from './hooks/useNightLock';
 import { useTheme } from './hooks/useTheme';
 import { useTodoHabit } from './hooks/useTodoHabit';
-import { startReminderLoop, stopReminderLoop } from './lib/notifications';
 import { Home } from './pages/Home';
 import { Onboarding } from './pages/Onboarding';
+import { Rehab90 } from './pages/Rehab90';
 import { Settings } from './pages/Settings';
 import { Stats } from './pages/Stats';
 import { Tools } from './pages/Tools';
 import { useLaundry } from './lib/laundry';
+import { useRehab } from './lib/rehab90';
 import { useYtUpload } from './lib/ytUpload';
 import { useAppStore } from './store/useAppStore';
 
@@ -21,11 +19,10 @@ export default function App() {
   const loading = useAppStore((s) => s.loading);
   const hydrate = useAppStore((s) => s.hydrate);
   const [tab, setTab] = useState<Tab>('today');
+  const { state: rehab, disable: disableRehab } = useRehab();
 
-useTheme();
+  useTheme();
   useDayRollover();
-  useNightLock();
-  useMlLock();
   useTodoHabit();
   useYtUpload();
   useLaundry();
@@ -34,16 +31,12 @@ useTheme();
     void hydrate();
   }, [hydrate]);
 
-  // Start/stop reminder scheduler based on settings.
+  // Auto-unlock rehab setelah 90 hari aman berturut-turut
   useEffect(() => {
-    if (!meta) return;
-    if (meta.notificationsEnabled) {
-      startReminderLoop(meta.reminders, meta.soundEnabled);
-    } else {
-      stopReminderLoop();
+    if (rehab.enabled && rehab.streak >= rehab.targetDays) {
+      disableRehab();
     }
-    return () => stopReminderLoop();
-  }, [meta]);
+  }, [rehab.enabled, rehab.streak, rehab.targetDays, disableRehab]);
 
   if (loading || !meta) {
     return (
@@ -55,16 +48,25 @@ useTheme();
 
   if (!meta.onboarded) return <Onboarding />;
 
+  if (rehab.enabled) {
+    return (
+      <div className="min-h-dvh bg-cream-50 dark:bg-neutral-950">
+        <main>
+          <Rehab90 />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-dvh bg-cream-50 dark:bg-neutral-950">
-      <SholatGate />
       <main>
         {tab === 'today' && <Home />}
         {tab === 'stats' && <Stats />}
         {tab === 'tools' && <Tools />}
         {tab === 'settings' && <Settings />}
       </main>
-<BottomNav active={tab} onChange={setTab} />
+      <BottomNav active={tab} onChange={setTab} />
     </div>
   );
 }
