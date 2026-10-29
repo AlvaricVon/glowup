@@ -3,9 +3,8 @@ import { useRehab } from '../lib/rehab90';
 import { todayKey } from '../lib/utils';
 
 const RULES = [
-  'Porn & onani = nol',
-  'Makan harus sesuai budget yang udah disisain. Kalo ada keperluan, potong dari uang makan, sisanya ditabung buat target usaha',
-  'Jangan boros. Disiplin keuangan',
+  'Jaga batasan pribadi',
+  'Makan sesuai budget yang udah disisain. Kalo ada keperluan, potong dari uang makan, sisanya ditabung buat wishlist',
   'No scrolling sosmed kecuali liat postingan yang udah lo save',
 ];
 
