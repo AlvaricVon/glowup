@@ -4,6 +4,7 @@ import { todayKey } from '../lib/utils';
 
 const RULES = [
   'Jaga batas diri',
+  'Banyakin diam, ngomong seperlunya',
   'No scrolling sosmed',
   'Mandi pagi & grooming',
   'Mandi sore',
