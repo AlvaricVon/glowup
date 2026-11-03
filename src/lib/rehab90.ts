@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { todayKey } from './utils';
+import { useAppStore } from '../store/useAppStore';
 
 const STORAGE_KEY = 'glowup-rehab-mode';
 const EVENT = 'glowup:rehab-mode';
@@ -15,9 +16,17 @@ export interface RehabState {
   targetDays: number;
   startDate: string;
   streak: number;
-  lastActionDate: string | null;
+  /** Tanggal terakhir user klik "hari ini aman". Null = belum pernah. */
+  lastOkDate: string | null;
   history: RehabHistoryItem[];
   completedAt: string | null;
+}
+
+/** Selisih hari (a - b), berbasis tengah malam lokal. */
+function dayDiff(a: string, b: string): number {
+  const [ay, am, ad] = a.split('-').map(Number);
+  const [by, bm, bd] = b.split('-').map(Number);
+  return Math.round((new Date(ay, am - 1, ad).getTime() - new Date(by, bm - 1, bd).getTime()) / 86_400_000);
 }
 
 function defaultState(): RehabState {
@@ -26,7 +35,7 @@ function defaultState(): RehabState {
     targetDays: 90,
     startDate: todayKey(),
     streak: 0,
-    lastActionDate: null,
+    lastOkDate: null,
     history: [],
     completedAt: null,
   };
@@ -36,16 +45,18 @@ function read(): RehabState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
-    const o = JSON.parse(raw) as Partial<RehabState>;
+    const o = JSON.parse(raw) as Record<string, unknown>;
     if (!o || typeof o !== 'object') return defaultState();
     return {
       enabled: o.enabled !== false,
       targetDays: typeof o.targetDays === 'number' ? o.targetDays : 90,
       startDate: typeof o.startDate === 'string' ? o.startDate : todayKey(),
       streak: typeof o.streak === 'number' ? o.streak : 0,
-      lastActionDate: typeof o.lastActionDate === 'string' ? o.lastActionDate : null,
+      lastOkDate: typeof o.lastOkDate === 'string' ? o.lastOkDate : null,
       history: Array.isArray(o.history)
-        ? o.history.filter((h): h is RehabHistoryItem => !!h && typeof h === 'object' && typeof (h as any).date === 'string')
+        ? (o.history as RehabHistoryItem[]).filter(
+            (h) => !!h && typeof h === 'object' && typeof h.date === 'string',
+          )
         : [],
       completedAt: typeof o.completedAt === 'string' ? o.completedAt : null,
     };
@@ -74,6 +85,7 @@ export function getRehabState(): RehabState {
 
 export function useRehab() {
   const [snap, setSnap] = useState<RehabState>(state);
+  const today = useAppStore((s) => s.today?.date) ?? todayKey();
 
   useEffect(() => {
     const fn = () => setSnap(state);
@@ -94,15 +106,26 @@ export function useRehab() {
     };
   }, []);
 
-  const markFail = useCallback(() => {
-    const now = new Date().toISOString();
+  // Kalau ada hari yang kelewat tanpa diklik, streak reset ke 0.
+  useEffect(() => {
+    if (!state.lastOkDate) return;
+    if (state.streak !== 0 && dayDiff(today, state.lastOkDate) >= 2) {
+      setState({ ...state, streak: 0 });
+    }
+  }, [today]);
+
+  const markOk = useCallback(() => {
     const d = todayKey();
-    if (state.lastActionDate === d) return;
+    if (state.lastOkDate === d) return;
+    const diff = state.lastOkDate ? dayDiff(d, state.lastOkDate) : null;
+    const nextStreak = diff === 1 ? state.streak + 1 : 1;
+    const now = new Date().toISOString();
     setState({
       ...state,
-      streak: 0,
-      lastActionDate: d,
-      history: [{ date: d, status: 'fail' as const, ts: now }, ...state.history].slice(0, 60),
+      streak: nextStreak,
+      lastOkDate: d,
+      history: [{ date: d, status: 'ok' as const, ts: now }, ...state.history].slice(0, 120),
+      completedAt: nextStreak >= state.targetDays ? now : state.completedAt,
     });
   }, []);
 
@@ -114,5 +137,5 @@ export function useRehab() {
     setState({ ...state, enabled: false });
   }, []);
 
-  return { state: snap, markFail, restartFresh, disable };
+  return { state: snap, markOk, restartFresh, disable };
 }
