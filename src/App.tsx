@@ -3,15 +3,6 @@ import { BottomNav, type Tab } from './components/BottomNav';
 import { useDayRollover } from './hooks/useDayRollover';
 import { useTheme } from './hooks/useTheme';
 import { useTodoHabit } from './hooks/useTodoHabit';
-import {
-  exitLockdown,
-  isNative,
-  nativeSchedulePrayerAlarms,
-  nativeSetAppLocked,
-  nativeStopAdhan,
-} from './lib/lockdown';
-import { useLaundry } from './lib/laundry';
-import { useYtUpload } from './lib/ytUpload';
 import { Home } from './pages/Home';
 import { Onboarding } from './pages/Onboarding';
 import { Settings } from './pages/Settings';
@@ -28,29 +19,10 @@ export default function App() {
   useTheme();
   useDayRollover();
   useTodoHabit();
-  useYtUpload();
-  useLaundry();
 
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
-
-  // Matikan total sistem adzan & lock app. Bersihin sisa alarm/adhan/LockTask
-  // yang mungkin masih nyangkut dari versi sebelumnya.
-  useEffect(() => {
-    if (!isNative()) return;
-    const cleanup = async () => {
-      try {
-        await nativeStopAdhan();
-        await nativeSchedulePrayerAlarms([]);
-        await nativeSetAppLocked('com.mobile.legends', false);
-        await exitLockdown();
-      } catch {
-        // noop
-      }
-    };
-    void cleanup();
-  }, []);
 
   if (loading || !meta) {
     return (

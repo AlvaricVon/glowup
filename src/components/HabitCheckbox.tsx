@@ -131,7 +131,7 @@ export function HabitCheckbox({ def, entry, onToggle, onLongPress, disabled = fa
         </span>
         {skipped ? (
           <span className="mt-0.5 block text-xs font-medium text-amber-700/90 dark:text-amber-400/90">
-            Sengaja di-skip — wajib Sholat Taubat
+            Sengaja di-skip
           </span>
         ) : excused ? (
           <span className="mt-0.5 block text-xs font-medium text-sky-700/90 dark:text-sky-400/90">

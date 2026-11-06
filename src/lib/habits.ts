@@ -1,57 +1,6 @@
-import type { DayEntry, HabitDef, Period } from './types';
+import type { HabitDef, Period } from './types';
 
-// Days: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-const MON = 1;
-const THU = 4;
-
-/** Day-of-week (0=Sun..6=Sat) buat YYYY-MM-DD, dihitung lokal. */
-function dowOf(date: string): number {
-  const [y, m, d] = date.split('-').map(Number);
-  return new Date(y, m - 1, d).getDay();
-}
-
-/**
- * Minum 2 gelas abis dzuhur/ashar: muncul tiap hari KECUALI Senin/Kamis yang
- * lagi puasa (biar gak dobel sama jadwal puasa). Tapi kalau puasa hari itu
- * di-excuse (gak puasa), minum-nya nongol lagi.
- */
-function minumVisible(day: DayEntry): boolean {
-  const dow = dowOf(day.date);
-  const isMonThu = dow === MON || dow === THU;
-  if (!isMonThu) return true;
-  return !!day.habits[FASTING_HABIT_ID]?.excused;
-}
-
-const LAUNDRY_KEY = 'glowup-laundry';
-
-/** Selisih hari (a - b) dalam satuan hari, berbasis tengah malam lokal. */
-function dayDiff(a: string, b: string): number {
-  const [ay, am, ad] = a.split('-').map(Number);
-  const [by, bm, bd] = b.split('-').map(Number);
-  return Math.round((new Date(ay, am - 1, ad).getTime() - new Date(by, bm - 1, bd).getTime()) / 86_400_000);
-}
-
-/**
- * Cuci baju muncul tiap 2 hari: keliatan kalau udah >= 2 hari sejak terakhir
- * nyuci. State `lastWash` disimpen di lib/laundry.ts. Kalau belum ada data,
- * sembunyi dulu sampai lib/laundry.ts nge-seed tanggal hari ini.
- */
-function laundryVisible(day: DayEntry): boolean {
-  let lastWash: string | null = null;
-  try {
-    const raw = localStorage.getItem(LAUNDRY_KEY);
-    if (raw) {
-      const o = JSON.parse(raw) as { lastWash?: unknown };
-      if (typeof o.lastWash === 'string') lastWash = o.lastWash;
-    }
-  } catch {
-    // ignore
-  }
-  if (!lastWash) return false;
-  return dayDiff(day.date, lastWash) >= 2;
-}
-
-/** The 5 daily wajib prayers. Sholat Taubat locks against these (mutual exclusion). */
+/** The 5 daily wajib prayers. */
 export const PRAYER_HABIT_IDS = [
   'subuh-masjid',
   'dzuhur-masjid',
@@ -60,28 +9,22 @@ export const PRAYER_HABIT_IDS = [
   'isya-masjid',
 ] as const;
 
-/** Pengganti sholat wajib yang sengaja ditinggalin. */
-export const TAUBAT_HABIT_ID = 'taubat';
-
-/** Habit puasa — bisa di-excuse (double-tap) kalau lagi gak puasa. */
-export const FASTING_HABIT_ID = 'puasa-senin-kamis';
-
 /** Habit workout — bisa di-excuse (double-tap) kalau hari ini rest day. */
 export const WORKOUT_HABIT_ID = 'workout-sore';
 
 /** Habit panasin motor & genset — bisa di-excuse (double-tap) kalau gak ada kendaraan. */
 export const GENSET_HABIT_ID = 'panasi-kendaraan';
 
-/** Habit cuci baju — muncul tiap 2 hari. */
-export const CUCI_BAJU_HABIT_ID = 'cuci-baju';
+/** Habit beresin kamar — klik buat buka sub-checklist kebersihan. */
+export const KAMAR_HABIT_ID = 'beresin-kamar';
 
 export const HABITS: HabitDef[] = [
   // Pagi
   { id: 'minum-pagi', label: 'Minum 2 gelas', description: 'Setelah bangun pagi', period: 'pagi', priority: 0.5 },
-  { id: 'grooming-pagi', label: 'Sikat gigi & Cuci Muka', description: 'Pake sabun muka', period: 'pagi', priority: 1 },
+  { id: 'grooming-pagi', label: 'Sikat gigi, kumur Listerine & cuci muka', description: 'Pake sabun muka', period: 'pagi', priority: 1 },
   { id: 'subuh-masjid', label: 'Sholat subuh', period: 'pagi', priority: 2 },
   { id: 'baca-quran', label: 'Baca Quran 5 halaman', description: 'Setelah sholat subuh', period: 'pagi', priority: 2.5 },
-  { id: 'beresin-kamar', label: 'Beresin kamar', description: 'Wajib setiap bangun tidur', period: 'pagi', priority: 3 },
+  { id: KAMAR_HABIT_ID, label: 'Beresin kamar', description: 'Klik buat buka checklist kebersihan kamar.', period: 'pagi', priority: 3 },
   {
     id: 'nulis-todo',
     label: 'Tulis to-do hari ini',
@@ -89,14 +32,12 @@ export const HABITS: HabitDef[] = [
     period: 'pagi',
     priority: 3.5,
   },
-  { id: 'physical-pagi', label: 'Hang dead + Skipping + Peregangan', description: 'Hang 30s+ (Target 3m -> Pull up), Skipping 5m, Stretching', period: 'pagi', priority: 4 },
   {
-    id: 'puasa-senin-kamis',
-    label: 'Puasa Senin Kamis',
-    description: 'Kalau hari ini lagi GAK puasa, double-tap (2x cepet) checkbox-nya → pilih "gak puasa" biar HP gak kekunci.',
+    id: 'physical-pagi',
+    label: 'Skipping 5mnt nonstop + Hang dead 1mnt',
+    description: 'Skipping 5 menit non stop (variasi gerakan tiap menit) + Hang dead 1 menit. Tanpa peregangan.',
     period: 'pagi',
-    priority: 7,
-    days: [1, 4],
+    priority: 4,
   },
   {
     id: 'mandi-pagi',
@@ -130,15 +71,6 @@ export const HABITS: HabitDef[] = [
     description: 'Setelah sholat dzuhur',
     period: 'siang',
     priority: 8.5,
-    visible: minumVisible,
-  },
-  {
-    id: CUCI_BAJU_HABIT_ID,
-    label: 'Cuci baju',
-    description: 'Muncul tiap 2 hari. Centang kalau udah nyuci hari ini.',
-    period: 'siang',
-    priority: 8.7,
-    visible: laundryVisible,
   },
 
   // Sore
@@ -149,7 +81,6 @@ export const HABITS: HabitDef[] = [
     description: 'Setelah sholat ashar',
     period: 'sore',
     priority: 10.5,
-    visible: minumVisible,
   },
   {
     id: 'workout-sore',
@@ -159,75 +90,22 @@ export const HABITS: HabitDef[] = [
     priority: 11.5,
   },
   { id: 'mandi-sore', label: 'Mandi sore/malem', period: 'sore', priority: 12 },
+  {
+    id: 'cuci-sempak',
+    label: 'Cuci sempak',
+    description: 'Setelah mandi sore/malem',
+    period: 'sore',
+    priority: 12.2,
+  },
 
   // Malam
   { id: 'maghrib-masjid', label: 'Sholat maghrib', period: 'malam', priority: 23 },
   { id: 'minum-maghrib', label: 'Minum 2 gelas', description: 'Setelah sholat maghrib', period: 'malam', priority: 23.5 },
   { id: 'isya-masjid', label: 'Sholat isya', period: 'malam', priority: 25 },
-  {
-    id: TAUBAT_HABIT_ID,
-    label: 'Sholat Taubat',
-    description:
-      'Cuma buat nutup sholat wajib yang SENGAJA ditinggalin — niat beneran tobat, bukan cari aman. Harus serius, gak main-main. Kalau 5 sholat wajib hari ini udah lengkap, ini gak perlu & gak bisa diisi.',
-    period: 'malam',
-    priority: 25.2,
-  },
   { id: 'minum-isya', label: 'Minum 2 gelas', description: 'Setelah sholat isya', period: 'malam', priority: 25.5 },
-  { id: 'grooming-malam', label: 'Sikat gigi & Cuci Muka', description: 'Sebelum tidur', period: 'malam', priority: 28 },
-  {
-    id: 'tidur-10',
-    label: 'Tidur sebelum jam 10',
-    description:
-      'Jam 21.00 (jam 9): lampu udah mati dan udah posisi rebahan siap tidur. Jam 21.00–22.00: sesi refreshing — baca komik, nonton anime, atau nonton donghua (bukan scroll HP), tapi cuma yang udah lo simpen (watchlist/readlist) aja. Jam 22.00 (jam 10): taruh HP, langsung tidur.',
-    period: 'malam',
-    priority: 29,
-  },
+  { id: 'grooming-malam', label: 'Sikat gigi, kumur Listerine & cuci muka', description: 'Sebelum tidur', period: 'malam', priority: 28 },
 
   // Limit
-  {
-    id: 'selesai-semua',
-    label: 'Selesaikan semua kewajiban & masalah',
-    description: 'WA to-do list & masalah hari ini beres — sebelum upload konten',
-    period: 'limit',
-    priority: 19.45,
-  },
-  {
-    id: 'upload-konten',
-    label: 'Upload konten',
-    description: 'OddlyLab · TikTok & Shorts',
-    period: 'limit',
-    priority: 19.5,
-  },
-  {
-    id: 'upload-clipping-3-sosmed',
-    label: 'Upload konten clipping',
-    description: 'Upload ke 3 sosmed langsung: YouTube, IG, TikTok — kalo udah, submit ke whoap jg',
-    period: 'limit',
-    priority: 19.55,
-  },
-  {
-    id: 'upload-konten-yt',
-    label: 'Upload konten YT',
-    description:
-      'Upload ke YouTube (Shorts & video panjang), langsung publish. Progress 3 hari: tap naik 25% → 75% → 100% (maks 1x naik per hari). Baru 100% pas udah beneran ke-upload.',
-    period: 'limit',
-    priority: 19.6,
-  },
-  {
-    id: 'push-mmr-ml',
-    label: 'Push global Gusion',
-    description:
-      'Sebelum main: tiap baru login, latihan Fanny dulu sampai sesi training-nya kelar (end), baru boleh main. Tiap main wajib sambil live, target push global Gusion, sambil kencengin musik biar have fun. Sampe kalah 3x, kalo udah waktu tidur ya tidur. Begitu dicentang (kalah 3x), ML langsung KEKUNCI — gak bisa dibuka lagi sampai besok.',
-    period: 'limit',
-    priority: 19.7,
-  },
-  {
-    id: 'upload-konten-ml',
-    label: 'Upload konten ML',
-    description: 'Upload konten Mobile Legends tiap hari',
-    period: 'limit',
-    priority: 19.75,
-  },
   { id: 'no-porn', label: 'No porn', description: 'Seharian gak nonton/liat', period: 'limit', priority: 31 },
   { id: 'no-scroll', label: 'No scrolling sosmed', description: 'Buka utk keperluan spesifik OK', period: 'limit', priority: 32 },
 ];

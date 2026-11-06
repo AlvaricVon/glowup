@@ -1,25 +1,7 @@
 import type { ReminderConfig } from './types';
 
 export const DEFAULT_REMINDERS: ReminderConfig[] = [
-  { id: 'subuh', label: 'Subuh — sholat time', time: '04:30', enabled: true },
-  { id: 'dzuhur', label: 'Dzuhur — sholat time', time: '12:00', enabled: true },
-  { id: 'ashar', label: 'Ashar — sholat time', time: '15:15', enabled: true },
-  { id: 'maghrib', label: 'Maghrib — sholat time', time: '18:00', enabled: true },
-  { id: 'isya', label: 'Isya — sholat time', time: '19:15', enabled: true },
   { id: 'mandi-2030', label: 'Mandi jam setengah 9 malam', time: '20:30', enabled: true },
-  {
-    id: 'tidur-mati-lampu',
-    label:
-      'Jam 9 — mati lampu & posisi tidur. Sesi refreshing cuma boleh yang udah di-save (watchlist/readlist)',
-    time: '21:00',
-    enabled: true,
-  },
-  {
-    id: 'tidur',
-    label: '10 menit lagi jam 10 — taruh HP, langsung tidur',
-    time: '21:50',
-    enabled: true,
-  },
 ];
 
 /**
@@ -27,20 +9,19 @@ export const DEFAULT_REMINDERS: ReminderConfig[] = [
  * Satu id bisa nyimpen beberapa versi lama, biar install yang ketinggalan
  * beberapa versi tetep ke-update ke default terbaru.
  */
-const LEGACY_REMINDER_DEFAULTS: Record<string, { time: string; label: string }[]> = {
-  tidur: [{ time: '21:30', label: 'Tidur — sebelum jam 10' }],
-  'tidur-mati-lampu': [
-    { time: '21:00', label: 'Jam 9 — mati lampu & posisi tidur, mulai sesi refreshing (komik/anime/donghua)' },
-    {
-      time: '21:00',
-      label:
-        'Jam 9 — mati lampu & posisi tidur. Sesi refreshing cuma boleh: fighting/gore/darah, top tier, atau dari watchlist/readlist',
-    },
-  ],
-};
+const LEGACY_REMINDER_DEFAULTS: Record<string, { time: string; label: string }[]> = {};
 
-/** Reminder yang udah gak dipake lagi (mis. jadi bagian tool Konsekuensi) — dibuang dari meta. */
-const RETIRED_REMINDER_IDS = new Set<string>(['pushup-100']);
+/** Reminder yang udah gak dipake lagi — dibuang dari meta. */
+const RETIRED_REMINDER_IDS = new Set<string>([
+  'pushup-100',
+  'subuh',
+  'dzuhur',
+  'ashar',
+  'maghrib',
+  'isya',
+  'tidur',
+  'tidur-mati-lampu',
+]);
 
 /**
  * Sinkronin daftar reminder yang kesimpen di meta sama DEFAULT_REMINDERS:

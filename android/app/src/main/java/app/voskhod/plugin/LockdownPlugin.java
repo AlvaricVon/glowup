@@ -19,11 +19,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
 
-import app.voskhod.lockdown.AdhanPlayer;
-import app.voskhod.lockdown.LockScreenActivity;
 import app.voskhod.lockdown.LockdownManager;
-import app.voskhod.lockdown.NightWakeScheduler;
-import app.voskhod.lockdown.PrayerWakeScheduler;
 
 @CapacitorPlugin(name = "Lockdown")
 public class LockdownPlugin extends Plugin {
@@ -59,17 +55,6 @@ public class LockdownPlugin extends Plugin {
         Activity activity = getActivity();
         if (activity == null) { call.reject("no activity"); return; }
         LockdownManager.from(getContext()).exitLockdown(activity);
-        call.resolve();
-    }
-
-    @PluginMethod
-    public void showLockScreen(PluginCall call) {
-        String prayerName = call.getString("prayerName", "Sholat");
-        Context ctx = getContext();
-        Intent intent = new Intent(ctx, LockScreenActivity.class);
-        intent.putExtra(LockScreenActivity.EXTRA_PRAYER_NAME, prayerName);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        ctx.startActivity(intent);
         call.resolve();
     }
 
@@ -155,18 +140,6 @@ FragmentActivity fa = (FragmentActivity) activity;
     }
 
 @PluginMethod
-    public void activateNightLock(PluginCall call) {
-        LockdownManager.from(getContext()).activateNightLock();
-        call.resolve();
-    }
-
-    @PluginMethod
-    public void deactivateNightLock(PluginCall call) {
-        LockdownManager.from(getContext()).deactivateNightLock();
-        call.resolve();
-    }
-
-    @PluginMethod
     public void setAppLocked(PluginCall call) {
         String pkg = call.getString("package");
         boolean locked = call.getBoolean("locked", false);
@@ -211,12 +184,6 @@ FragmentActivity fa = (FragmentActivity) activity;
         call.resolve(ret);
     }
 
-    @PluginMethod
-    public void scheduleNightAlarm(PluginCall call) {
-        NightWakeScheduler.scheduleNext(getContext());
-        call.resolve();
-    }
-
 @PluginMethod
     public void openBiometricEnrollment(PluginCall call) {
         Context ctx = getContext();
@@ -239,40 +206,5 @@ FragmentActivity fa = (FragmentActivity) activity;
         }
     }
 
-    @PluginMethod
-    public void playAdhan(PluginCall call) {
-        boolean loop = call.getBoolean("loop", false);
-        AdhanPlayer.play(getContext(), loop);
-        call.resolve();
-    }
-
-    @PluginMethod
-    public void stopAdhan(PluginCall call) {
-        AdhanPlayer.stop();
-        call.resolve();
-    }
-
-    @PluginMethod
-    public void schedulePrayerAlarms(PluginCall call) {
-        com.getcapacitor.JSArray arr = call.getArray("alarms");
-        if (arr == null) {
-            call.reject("alarms required");
-            return;
-        }
-        try {
-            org.json.JSONArray json = new org.json.JSONArray();
-            for (int i = 0; i < arr.length(); i++) {
-                org.json.JSONObject o = arr.getJSONObject(i);
-                org.json.JSONObject j = new org.json.JSONObject();
-                j.put("t", o.optLong("t"));
-                j.put("name", o.optString("name"));
-                json.put(j);
-            }
-            PrayerWakeScheduler.schedule(getContext(), json);
-            call.resolve();
-        } catch (Exception e) {
-            call.reject("bad alarms", e);
-        }
-    }
 }
 
