@@ -3,15 +3,20 @@ import { BottomNav, type Tab } from './components/BottomNav';
 import { useDayRollover } from './hooks/useDayRollover';
 import { useTheme } from './hooks/useTheme';
 import { useTodoHabit } from './hooks/useTodoHabit';
+import {
+  exitLockdown,
+  isNative,
+  nativeSchedulePrayerAlarms,
+  nativeSetAppLocked,
+  nativeStopAdhan,
+} from './lib/lockdown';
+import { useLaundry } from './lib/laundry';
+import { useYtUpload } from './lib/ytUpload';
 import { Home } from './pages/Home';
 import { Onboarding } from './pages/Onboarding';
-import { Rehab90 } from './pages/Rehab90';
 import { Settings } from './pages/Settings';
 import { Stats } from './pages/Stats';
 import { Tools } from './pages/Tools';
-import { useLaundry } from './lib/laundry';
-import { useRehab } from './lib/rehab90';
-import { useYtUpload } from './lib/ytUpload';
 import { useAppStore } from './store/useAppStore';
 
 export default function App() {
@@ -19,7 +24,6 @@ export default function App() {
   const loading = useAppStore((s) => s.loading);
   const hydrate = useAppStore((s) => s.hydrate);
   const [tab, setTab] = useState<Tab>('today');
-  const { state: rehab, disable: disableRehab } = useRehab();
 
   useTheme();
   useDayRollover();
@@ -31,12 +35,22 @@ export default function App() {
     void hydrate();
   }, [hydrate]);
 
-  // Auto-unlock rehab setelah 90 hari aman berturut-turut
+  // Matikan total sistem adzan & lock app. Bersihin sisa alarm/adhan/LockTask
+  // yang mungkin masih nyangkut dari versi sebelumnya.
   useEffect(() => {
-    if (rehab.enabled && rehab.streak >= rehab.targetDays) {
-      disableRehab();
-    }
-  }, [rehab.enabled, rehab.streak, rehab.targetDays, disableRehab]);
+    if (!isNative()) return;
+    const cleanup = async () => {
+      try {
+        await nativeStopAdhan();
+        await nativeSchedulePrayerAlarms([]);
+        await nativeSetAppLocked('com.mobile.legends', false);
+        await exitLockdown();
+      } catch {
+        // noop
+      }
+    };
+    void cleanup();
+  }, []);
 
   if (loading || !meta) {
     return (
@@ -47,16 +61,6 @@ export default function App() {
   }
 
   if (!meta.onboarded) return <Onboarding />;
-
-  if (rehab.enabled) {
-    return (
-      <div className="min-h-dvh bg-cream-50 dark:bg-neutral-950">
-        <main>
-          <Rehab90 />
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-dvh bg-cream-50 dark:bg-neutral-950">

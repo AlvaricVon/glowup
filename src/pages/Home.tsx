@@ -3,7 +3,6 @@ import { ConfettiBurst } from '../components/ConfettiBurst';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { HabitGroup } from '../components/HabitGroup';
 import { ProgressBar } from '../components/ProgressBar';
-import { PrayerPanel } from '../components/PrayerPanel';
 import { QuoteCard } from '../components/QuoteCard';
 import { StreakCounter } from '../components/StreakCounter';
 import {
@@ -51,7 +50,6 @@ export function Home() {
   );
 
   const [confettiKey, setConfettiKey] = useState(0);
-  const [prayerPanelOpen, setPrayerPanelOpen] = useState(false);
   const [confettiOrigin, setConfettiOrigin] = useState<{ x: number; y: number } | undefined>();
   const [taubatConfirmOpen, setTaubatConfirmOpen] = useState(false);
   const [skipTarget, setSkipTarget] = useState<string | null>(null);
@@ -225,15 +223,11 @@ export function Home() {
             altClickHabitIds={[FASTING_HABIT_ID, WORKOUT_HABIT_ID, GENSET_HABIT_ID]}
             onHabitAltClick={handleHabitAltClick}
             progressById={{ [YT_HABIT_ID]: ytProgress }}
-            longPressHabitId="subuh-masjid"
-            onHabitLongPress={() => setPrayerPanelOpen(true)}
           />
         ))}
       </div>
 
       <QuoteCard quote={quote} />
-
-      {prayerPanelOpen && <PrayerPanel onClose={() => setPrayerPanelOpen(false)} />}
 
       <ConfirmModal
         open={taubatConfirmOpen}
