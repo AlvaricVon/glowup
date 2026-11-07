@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { BottomNav, type Tab } from './components/BottomNav';
 import { useDayRollover } from './hooks/useDayRollover';
 import { useTheme } from './hooks/useTheme';
-import { useTodoHabit } from './hooks/useTodoHabit';
 import { Home } from './pages/Home';
 import { Onboarding } from './pages/Onboarding';
 import { Settings } from './pages/Settings';
@@ -18,7 +17,6 @@ export default function App() {
 
   useTheme();
   useDayRollover();
-  useTodoHabit();
 
   useEffect(() => {
     void hydrate();

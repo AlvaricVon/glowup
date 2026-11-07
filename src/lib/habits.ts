@@ -26,13 +26,6 @@ export const HABITS: HabitDef[] = [
   { id: 'baca-quran', label: 'Baca Quran 5 halaman', description: 'Setelah sholat subuh', period: 'pagi', priority: 2.5 },
   { id: KAMAR_HABIT_ID, label: 'Beresin kamar', description: 'Klik buat buka checklist kebersihan kamar.', period: 'pagi', priority: 3 },
   {
-    id: 'nulis-todo',
-    label: 'Tulis to-do hari ini',
-    description: 'Buka Tools → To-Do, tulis rencana hari ini. Auto-centang kalau udah ada to-do tanggal hari ini.',
-    period: 'pagi',
-    priority: 3.5,
-  },
-  {
     id: 'physical-pagi',
     label: 'Skipping 5mnt nonstop + Hang dead 1mnt',
     description: 'Skipping 5 menit non stop (variasi gerakan tiap menit) + Hang dead 1 menit. Tanpa peregangan.',
